@@ -1,0 +1,20 @@
+import os,shutil,json,time,sys
+d='/home/claude/chessapp/'; out=d+'site/'
+os.makedirs(out+'engine',exist_ok=True)
+note=sys.argv[1] if len(sys.argv)>1 else ''
+build=time.strftime('%Y%m%d-%H%M%S')
+t=open(d+'src/template.html').read()
+js=lambda p: open(d+p).read().replace('</script','<\\/script')
+app='\n'.join(js('src/'+f) for f in ['core.js','engine.js','board.js','ui_main.js','ui_stats.js','ui_review.js','ui_puzzles.js','ui_openings.js','ui_train.js','app.js'])
+t=t.replace('<script type="text/plain" id="sfjs">/*SFJS*/</script>\n','').replace('<script type="text/plain" id="sfwasm">/*SFWASM*/</script>\n','')
+t=t.replace('<script>/*CHESSJS*/</script>','<script src="vendor/chess.js"></script><script src="vendor/book.js"></script>')
+t=t.replace('<script>const BOOK=/*BOOK*/;const PIECES=/*PIECES*/;</script>','<script>const PIECES=/*PIECES*/;const BUILD_ID="'+build+'";</script>')
+t=t.replace('/*CSS*/',open(d+'src/app.css').read(),1).replace('/*PIECES*/',open(d+'pieces.json').read(),1).replace('/*APP*/',app,1)
+open(out+'index.html','w').write(t)
+os.makedirs(out+'vendor',exist_ok=True)
+shutil.copy(d+'chess.js',out+'vendor/chess.js')
+open(out+'vendor/book.js','w').write('const BOOK='+open(d+'book.json').read()+';')
+shutil.copy(d+'sf.js',out+'engine/sf.js'); shutil.copy(d+'sf.wasm',out+'engine/sf.wasm')
+json.dump({'build':build,'note':note},open(out+'version.json','w'))
+open(out+'.nojekyll','w').write('')
+print('built',build, os.path.getsize(out+'index.html')//1024,'KB')
