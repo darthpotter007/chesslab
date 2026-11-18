@@ -127,6 +127,7 @@ const clsColor = c => `var(--c-${c})`;
 function icon(c) { if (!c) return ''; const s = CLS[c].sym; return `<span class="ic" style="background:${clsColor(c)};font-size:${s.length > 1 && s !== '!!' && s !== '?!' && s !== '??' ? 9 : 10}px" title="${CLS[c].name}">${c === 'excellent' ? '👍' : c === 'book' ? '📖' : s}</span>`; }
 
 const ANALYSIS_VER = 3;
+const CLS_VER = 2; // bump when classification rules change: re-labels saved analyses without re-running the engine
 // Build positions & moves for a game
 function replay(g) {
   const ch = new Chess(g.startFen || undefined);
@@ -180,12 +181,12 @@ function classifyAll(g, a, fens, moves) {
         const secW = a.sec[i] ? winFor(a.sec[i], mover) : null;
         const recapture = i > 0 && moves[i - 1].captured && m.to === moves[i - 1].to;
         if (wa >= 45 && wb < 98 && !(m.piece === 'p' && !m.promotion) && isSacrifice(fens[i], u)) c = 'brilliant';
-        else if (secW != null && isBest && wb - secW >= 15 && !recapture && wa >= 30 && !(secW >= 85)) c = 'great';
+        else if (secW != null && isBest && wb - secW >= 20 && !recapture && !ch.in_check() && wa >= 30 && wb < 92 && !(secW >= 80)) c = 'great';
       }
     }
     cls.push(c);
   }
-  a.cls = cls; a.loss = loss;
+  a.cls = cls; a.loss = loss; a.cver = CLS_VER;
   a.acc = accuracy(a.ev, fens);
   a.phase = fens.slice(0, -1).map((f, i) => phaseOf(f, i));
   return a;

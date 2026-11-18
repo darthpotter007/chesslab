@@ -63,8 +63,8 @@ VIEWS.review = {
     a.cls.forEach((c, i) => { const col = this.fens[i].split(' ')[1]; cnt[col][c] = (cnt[col][c] || 0) + 1; });
     const wN = g.color === 'w' ? g.me.name : g.opp.name, bN = g.color === 'b' ? g.me.name : g.opp.name;
     el.innerHTML = `<div class="row" style="justify-content:space-around;text-align:center;margin-bottom:6px">
-      <div><div class="note">${esc(wN)}</div><div class="kpi" style="font-size:28px">${a.acc.w != null ? fmt1(a.acc.w) : '—'}</div><div class="note">Accuracy</div></div>
-      <div><div class="note">${esc(bN)}</div><div class="kpi" style="font-size:28px">${a.acc.b != null ? fmt1(a.acc.b) : '—'}</div><div class="note">Accuracy</div></div></div>
+      <div><div class="note">${esc(wN)}</div><div class="kpi" style="font-size:28px">${a.acc.w != null ? fmt1(calAcc(a.acc.w)) : '—'}</div><div class="note">Accuracy${g.acc ? ` · chess.com ${fmt1(g.color === 'w' ? g.acc.me : g.acc.opp)}` : ''}</div></div>
+      <div><div class="note">${esc(bN)}</div><div class="kpi" style="font-size:28px">${a.acc.b != null ? fmt1(calAcc(a.acc.b)) : '—'}</div><div class="note">Accuracy${g.acc ? ` · chess.com ${fmt1(g.color === 'b' ? g.acc.me : g.acc.opp)}` : ''}</div></div></div>
       <svg class="graph" id="rgraph" viewBox="0 0 600 110" preserveAspectRatio="none"></svg>
       <table class="cls-tbl" style="margin-top:8px">${CLS_ORDER.map(c => `<tr><td class="c" style="color:${clsColor(c)}">${cnt.w[c] || 0}</td><td style="width:60%"><span class="row" style="gap:8px;justify-content:center">${icon(c)} ${CLS[c].name}</span></td><td class="c" style="color:${clsColor(c)}">${cnt.b[c] || 0}</td></tr>`).join('')}</table>
       <div class="note" style="text-align:center">Depth ${a.depth} · <a href="#" id="reanal">re-analyze deeper</a></div>`;

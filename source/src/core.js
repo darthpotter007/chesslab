@@ -70,6 +70,20 @@ const S = {
   filters: { tc: 'all', range: 'all', rated: 'all' }, profile: null,
   settings: { tcs: { bullet: false, blitz: true, rapid: true, daily: true, unknown: true } }
 };
+// accuracy calibration: maps our (Lichess-style) accuracy onto chess.com's scale, fitted on your games that have both
+S.calib = { a: 0.88, b: 4.2, n: 0 };
+const calAcc = x => x == null ? null : clamp(S.calib.a * x + S.calib.b, 0, 100);
+function recalib() {
+  const xs = [], ys = [];
+  for (const g of S.games) { if (!g.acc || !isAnalysed(g.id)) continue; const a = S.analysis.get(g.id); const o = g.color === 'w' ? 'b' : 'w';
+    if (g.acc.me != null && a.acc[g.color] != null) { xs.push(a.acc[g.color]); ys.push(g.acc.me); } if (g.acc.opp != null && a.acc[o] != null) { xs.push(a.acc[o]); ys.push(g.acc.opp); } }
+  if (xs.length < 12) return;
+  const n = xs.length, mx = xs.reduce((s, x) => s + x, 0) / n, my = ys.reduce((s, x) => s + x, 0) / n;
+  let sxy = 0, sxx = 0; for (let i = 0; i < n; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; }
+  const a = clamp(sxx ? sxy / sxx : 1, 0.6, 1.4); S.calib = { a, b: my - a * mx, n };
+}
+// your accuracy in a game: chess.com's own number when it exists, otherwise ours (calibrated)
+function myAcc(g) { if (g.acc && g.acc.me != null) return g.acc.me; return isAnalysed(g.id) ? calAcc(S.analysis.get(g.id).acc[g.color]) : null; }
 const inScope = g => S.settings.tcs[g.tc] !== false;
 const scoped = () => S.games.filter(inScope);
 
@@ -233,6 +247,10 @@ async function loadAll() {
   rebuildGames();
   S.analysis = new Map(await DB.all('analysis'));
   S.puzzles = new Map(await DB.all('puzzles'));
+  const redo = [];
+  for (const [id, a] of S.analysis) if (a.ver === ANALYSIS_VER && a.cver !== CLS_VER && S.byId.has(id)) { classifyAll(S.byId.get(id), a); redo.push([id, a]); }
+  if (redo.length) await DB.putMany('analysis', redo);
+  recalib();
 }
 function rebuildGames() { S.games = [...S.byId.values()].sort((a, b) => b.end - a.end); }
 

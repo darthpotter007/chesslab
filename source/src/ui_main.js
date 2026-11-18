@@ -24,7 +24,7 @@ function updateStatus() {
 }
 let _refreshT = null;
 function onAnalysed(id) {
-  userHdr();
+  userHdr(); recalib();
   // live-refresh analysis-dependent views
   if (VIEWS[CURVIEW] && VIEWS[CURVIEW].onAnalysed) VIEWS[CURVIEW].onAnalysed(id);
 }
@@ -115,7 +115,7 @@ VIEWS.games = {
         <select id="bdepth" data-tip="Engine depth for bulk analysis. 12 is fast and solid; 16 is slower and more precise."><option value="10">Fast (depth 10)</option><option value="12" selected>Standard (depth 12)</option><option value="16">Deep (depth 16)</option></select>
         <button class="btn primary" id="anall" ${un.length ? '' : 'disabled'}>Analyze ${un.length > 50 ? 'next 50' : un.length} unanalyzed</button></div>
         <table><thead><tr><th></th><th>Date</th><th>Opponent</th><th>Opening</th><th>Type</th><th>Moves</th><th>Accuracy</th><th></th></tr></thead><tbody>
-        ${gs.slice(this.page * per, this.page * per + per).map(g => { const a = S.analysis.get(g.id); const acc = isAnalysed(g.id) && a.acc[g.color] != null ? fmt1(a.acc[g.color]) : g.acc && g.acc.me ? fmt1(g.acc.me) + '<span class="muted" data-tip="From chess.com"> *</span>' : '<span class="muted">—</span>';
+        ${gs.slice(this.page * per, this.page * per + per).map(g => { const a = S.analysis.get(g.id); const acc = g.acc && g.acc.me != null ? fmt1(g.acc.me) : isAnalysed(g.id) && a.acc[g.color] != null ? fmt1(calAcc(a.acc[g.color])) : '<span class="muted">—</span>';
           return `<tr class="click" data-id="${esc(g.id)}"><td><span class="res ${g.result}">${g.result === 'win' ? 'W' : g.result === 'loss' ? 'L' : '½'}</span></td><td>${fmtDate(g.end)}</td><td><span class="cdot ${g.color}" data-tip="You played ${g.color === 'w' ? 'White' : 'Black'}"></span> ${esc(g.opp.name)} <span class="muted">(${g.opp.rating || '?'})</span></td><td class="t2" style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.opening)}</td><td class="t2">${g.tc}</td><td>${g.moves}</td><td>${acc}</td><td>${isAnalysed(g.id) ? '<span class="tag">analyzed</span>' : Q.cur === g.id || Q.items.includes(g.id) ? '<span class="tag">queued</span>' : ''}</td></tr>`; }).join('')}
         </tbody></table>
         <div class="row" style="margin-top:10px;justify-content:center">${pages > 1 ? `<button class="btn sm" id="pp" ${this.page ? '' : 'disabled'}>← Prev</button><span class="muted">Page ${this.page + 1} of ${pages}</span><button class="btn sm" id="pn" ${this.page < pages - 1 ? '' : 'disabled'}>Next →</button>` : ''}</div>`;

@@ -61,7 +61,7 @@ VIEWS.stats = {
     const tcs = [...new Set(gs.map(g => g.tc))];
     const ratingSeries = tcs.map(tc => ({ name: tc[0].toUpperCase() + tc.slice(1), color: TC_COLORS[tc] || '#888', pts: chron.filter(g => g.tc === tc && g.rated && g.me.rating).map(g => ({ x: g.end, y: g.me.rating, tip: `${g.result === 'win' ? 'W' : g.result === 'loss' ? 'L' : 'D'} vs ${esc(g.opp.name)} (${g.opp.rating})` })) })).filter(s => s.pts.length);
     const curR = ratingSeries.map(s => { const last = s.pts[s.pts.length - 1].y; const peak = Math.max(...s.pts.map(p => p.y)); return `<div class="card tile"><div class="v">${last}</div><div class="l"><b style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${s.color};margin-right:5px"></b>${s.name} rating</div><div class="s">Peak ${peak}</div></div>`; }).join('');
-    const accs = gs.map(g => isAnalysed(g.id) ? S.analysis.get(g.id).acc[g.color] : g.acc ? g.acc.me : null).filter(x => x != null);
+    const accs = gs.map(myAcc).filter(x => x != null);
     // termination
     const howLabel = { checkmated: 'Checkmate', resigned: 'Resignation', timeout: 'Time', abandoned: 'Abandoned', agreed: 'Agreement', repetition: 'Repetition', stalemate: 'Stalemate', insufficient: 'Insufficient material', '50move': '50-move rule', timevsinsufficient: 'Timeout vs insufficient', other: 'Other' };
     const howRows = res => { const mp = {}; for (const g of gs) if (g.result === res) mp[g.how] = (mp[g.how] || 0) + 1; const n = gs.filter(g => g.result === res).length; return Object.entries(mp).sort((a, b) => b[1] - a[1]).map(([k, v]) => [howLabel[k] || k, v, `${howLabel[k] || k}: ${v} of ${n} (${pct(v, n)}%)`]); };
@@ -136,7 +136,7 @@ VIEWS.stats = {
     if (an.length < 1) { box.innerHTML = `<div class="card"><h3>Engine insights</h3><p class="t2">Analyze some games to unlock accuracy trends, accuracy by game phase, blunder patterns, conversion rate and more.</p><button class="btn primary" onclick="Q.add(filtered().filter(g=>!isAnalysed(g.id)).slice(0,30).map(g=>g.id));toast('Analyzing your 30 most recent games in the background')">Analyze 30 most recent games</button></div>`; return; }
     const A = analysisAgg(an);
     const chron = [...an].sort((a, b) => a.end - b.end);
-    const accPts = chron.map(g => ({ x: g.end, y: S.analysis.get(g.id).acc[g.color], tip: `vs ${esc(g.opp.name)}` })).filter(p => p.y != null);
+    const accPts = chron.map(g => ({ x: g.end, y: myAcc(g), tip: `vs ${esc(g.opp.name)}` })).filter(p => p.y != null);
     // rolling average
     const roll = accPts.map((p, i) => { const w = accPts.slice(Math.max(0, i - 9), i + 1); return { x: p.x, y: w.reduce((s, q) => s + q.y, 0) / w.length }; });
     const phaseNames = { open: 'Opening', mid: 'Middlegame', end: 'Endgame' };
