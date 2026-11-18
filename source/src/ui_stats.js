@@ -98,6 +98,7 @@ VIEWS.stats = {
         ${curR}
         <div class="card tile"><div class="v">${accs.length ? fmt1(accs.reduce((s, x) => s + x, 0) / accs.length) : '—'}</div><div class="l">Avg accuracy</div><div class="s">${accs.length} of ${c.n} games have accuracy${accs.length < c.n ? ` · <a href="#games">analyze more</a>` : ''}</div></div>
         <div class="card tile"><div class="v">${bw}</div><div class="l">Longest win streak</div><div class="s">Longest losing streak: ${bl}</div></div>
+        ${(() => { let nb = 0, ng = 0; for (const g of gs) if (isAnalysed(g.id)) { const a = S.analysis.get(g.id); a.cls.forEach((c, i) => { const mine = (i % 2 === 0) === (g.color === 'w'); if (mine && c === 'brilliant') nb++; if (mine && c === 'great') ng++; }); } return `<div class="card tile" style="cursor:pointer" onclick="go('highlights',{cls:'brilliant'})"><div class="v" style="color:var(--c-brilliant)">${nb} <span style="font-size:15px">!!</span></div><div class="l">Brilliant moves</div><div class="s">${ng} great moves · see them all →</div></div>`; })()}
         ${bestWin ? `<div class="card tile" style="cursor:pointer" onclick="go('review','${esc(bestWin.id)}')"><div class="v">${bestWin.opp.rating}</div><div class="l">Best win</div><div class="s">vs ${esc(bestWin.opp.name)} · ${fmtDate(bestWin.end)}</div></div>` : ''}
       </div>
       <div class="card" style="margin-bottom:14px"><h3>Rating history</h3>${lineChart(ratingSeries, { h: 260 })}</div>

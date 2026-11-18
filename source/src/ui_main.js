@@ -61,6 +61,10 @@ VIEWS.import = {
         <div class="t2" style="margin-bottom:6px">Time controls to include in stats, analysis, puzzles and training:</div>
         <div class="row" id="tcset">${['rapid', 'blitz', 'daily', 'bullet'].map(t => `<label class="chip ${S.settings.tcs[t] !== false ? 'on' : ''}" style="user-select:none"><input type="checkbox" data-tc="${t}" ${S.settings.tcs[t] !== false ? 'checked' : ''} style="display:none">${t[0].toUpperCase() + t.slice(1)} <span style="opacity:.7">${S.games.filter(g => g.tc === t).length}</span></label>`).join('')}</div>
         <div class="note" style="margin-top:6px">Bullet is off by default: fast games are noisy and teach less. You can turn it back on anytime.</div></div>
+      <div class="card" style="text-align:left;margin-top:14px"><h2>Save your progress</h2>
+        <p class="t2">Your games, analyses, puzzle progress and repertoire are saved automatically <b>in this browser</b>. They stay until you clear your browser data. Download a backup now and then; restore it in any browser or on another computer.</p>
+        <div class="row"><button class="btn primary" id="bkexp">Download backup</button><label class="btn">Restore from backup<input type="file" id="bkimp" accept=".gz,.json" style="display:none"></label><span class="note" id="bkst"></span></div>
+        <div class="note" id="bkinfo" style="margin-top:8px"></div></div>
       ${S.games.length ? `<div class="card" style="text-align:left;margin-top:14px"><h2>Data</h2><p class="note">Everything is stored in this browser only. ${S.games.length} games, ${S.analysis.size} analyses, ${S.puzzles.size} puzzles.</p><div class="row"><button class="btn" id="wipeA">Clear analyses & puzzles</button><button class="btn" id="wipe">Delete everything</button></div></div>` : ''}
     </div>`;
     $('#go').onclick = async () => {
@@ -79,6 +83,13 @@ VIEWS.import = {
       }
     };
     $$('#tcset input').forEach(i => i.onchange = async () => { S.settings.tcs[i.dataset.tc] = i.checked; i.parentElement.classList.toggle('on', i.checked); if (!['all', ...Object.keys(S.settings.tcs).filter(k => S.settings.tcs[k])].includes(S.filters.tc)) S.filters.tc = 'all'; await DB.put('kv', 'settings', S.settings); userHdr(); });
+    (async () => {
+      const lb = await DB.get('kv', 'lastBackup'); const prot = await protectStorage();
+      let est = ''; try { const e = await navigator.storage.estimate(); est = ` Using ${(e.usage / 1048576).toFixed(1)} MB.`; } catch (e) { }
+      const el = $('#bkinfo'); if (el) el.innerHTML = `Last backup: <b>${lb ? fmtDate(lb) : 'never'}</b>. ${prot ? '✓ This browser has agreed not to auto-clear ChessLab data.' : 'This browser may clear site data if your disk gets full; backups protect you.'}${est}`;
+    })();
+    $('#bkexp').onclick = async () => { $('#bkst').textContent = 'Preparing…'; try { const n = await exportBackup(); $('#bkst').textContent = `Saved (${(n / 1048576).toFixed(1)} MB). Check your Downloads folder.`; } catch (e) { $('#bkst').textContent = 'Backup failed: ' + e.message; } };
+    $('#bkimp').onchange = async e => { const f = e.target.files[0]; if (!f) return; $('#bkst').textContent = 'Restoring…'; try { const d = await importBackup(f); $('#bkst').textContent = `Restored backup from ${fmtDate(d.at)}. Reloading…`; setTimeout(() => location.reload(), 900); } catch (err) { $('#bkst').textContent = 'Restore failed: ' + err.message; } };
     $('#uname').onkeydown = e => { if (e.key === 'Enter') $('#go').click(); };
     $('#pgnf').onchange = async e => {
       const u = $('#uname').value.trim().toLowerCase(); if (!u) { $('#pprog').textContent = 'Type your username above first.'; return; }

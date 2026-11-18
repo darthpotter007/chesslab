@@ -5,7 +5,7 @@ note=sys.argv[1] if len(sys.argv)>1 else ''
 build=time.strftime('%Y%m%d-%H%M%S')
 t=open(d+'src/template.html').read()
 js=lambda p: open(d+p).read().replace('</script','<\\/script')
-app='\n'.join(js('src/'+f) for f in ['core.js','engine.js','board.js','ui_main.js','ui_stats.js','ui_review.js','ui_puzzles.js','ui_openings.js','ui_train.js','app.js'])
+app='\n'.join(js('src/'+f) for f in ['core.js','engine.js','board.js','ui_main.js','ui_stats.js','ui_review.js','ui_puzzles.js','ui_openings.js','ui_train.js','ui_rep.js','ui_highlights.js','app.js'])
 t=t.replace('<script type="text/plain" id="sfjs">/*SFJS*/</script>\n','').replace('<script type="text/plain" id="sfwasm">/*SFWASM*/</script>\n','')
 t=t.replace('<script>/*CHESSJS*/</script>','<script src="vendor/chess.js"></script><script src="vendor/book.js"></script>')
 t=t.replace('<script>const BOOK=/*BOOK*/;const PIECES=/*PIECES*/;</script>','<script>const PIECES=/*PIECES*/;const BUILD_ID="'+build+'";</script>')

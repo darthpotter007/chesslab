@@ -49,7 +49,8 @@ VIEWS.review = {
     const g = this.g; const queued = Q.cur === g.id || Q.items.includes(g.id);
     $('#rhead').innerHTML = `<div class="row"><span class="res ${g.result}">${g.result === 'win' ? 'W' : g.result === 'loss' ? 'L' : '½'}</span>
       <div><b>${esc(g.color === 'w' ? g.me.name : g.opp.name)}</b> (${(g.color === 'w' ? g.me.rating : g.opp.rating) || '?'}) vs <b>${esc(g.color === 'b' ? g.me.name : g.opp.name)}</b> (${(g.color === 'b' ? g.me.rating : g.opp.rating) || '?'})<div class="note">${fmtDate(g.end)} · ${g.tc} ${esc(g.tcStr || '')} · ${esc(g.opening)} · ${g.result === 'win' ? 'You won' : g.result === 'loss' ? 'You lost' : 'Draw'} by ${esc(g.how)}</div></div>
-      <span class="sp"></span>${g.url ? `<a href="${esc(g.url)}" target="_blank" class="note">chess.com ↗</a>` : ''}</div>`;
+      <span class="sp"></span>${g.url ? `<a href="${esc(g.url)}" target="_blank" class="note">chess.com ↗</a>` : ''}</div>${(() => { const d = repDeviation(g); if (!d || d.type === 'end') return ''; return `<div class="note" style="margin-top:6px">📚 Repertoire: ${d.type === 'me' ? `<span style="color:var(--c-mistake)">you played ${esc(d.played)} at move ${Math.floor(d.ply / 2) + 1}; your prep says <b>${esc(d.expected)}</b></span>` : `opponent left your prep at move ${Math.floor(d.ply / 2) + 1} with ${esc(d.played)}`} · <a href="#" id="rgoply" data-p="${d.ply + 1}">jump there</a></div>`; })()}`;
+    const jp = $('#rgoply'); if (jp) jp.onclick = e => { e.preventDefault(); this.vari = null; this.ply = +jp.dataset.p; this.update(); };
   },
   renderSummary() {
     const a = this.a, g = this.g, el = $('#rsum');
