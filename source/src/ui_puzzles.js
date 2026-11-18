@@ -1,9 +1,17 @@
 // ===== puzzles =====
 const KIND_LABEL = { missed: 'Missed in your game', found: 'You found it', defense: 'Defense', opening: 'Opening fix', convert: 'Conversion' };
 VIEWS.puzzles = {
-  f: { kind: 'all', theme: 'all', since: '30', multi: false }, cur: null,
+  f: { kind: 'all', theme: 'all', since: 'auto', multi: false }, cur: null,
   // puzzles in the current filters; "since" keeps you learning from your recent games
-  inPeriod(p, since = this.f.since) { if (since === 'all') return true; const g = S.byId.get(p.gameId); return g && g.end >= Date.now() - (+since) * DAY; },
+  inPeriod(p, since = this.f.since) { if (since === 'auto') since = this.autoSince(); if (since === 'all') return true; const g = S.byId.get(p.gameId); return g && g.end >= Date.now() - (+since) * DAY; },
+  // default window: the most recent period that still has at least 10 puzzles you haven't done
+  autoSince() {
+    if (this._auto && Date.now() - this._autoAt < 5000) return this._auto;
+    const ps = [...S.puzzles.values()].filter(p => !p.tries && S.byId.has(p.gameId) && inScope(S.byId.get(p.gameId)));
+    let pick = 'all';
+    for (const d of ['14', '30', '90']) if (ps.filter(p => S.byId.get(p.gameId).end >= Date.now() - (+d) * DAY).length >= 10) { pick = d; break; }
+    this._auto = pick; this._autoAt = Date.now(); return pick;
+  },
   list(since) {
     const now = Date.now();
     return [...S.puzzles.values()].filter(p => S.byId.has(p.gameId) && inScope(S.byId.get(p.gameId)) && this.inPeriod(p, since)
@@ -40,7 +48,7 @@ VIEWS.puzzles = {
         <div class="card tile"><div class="v">${all.length}</div><div class="l">Puzzles from your games</div><div class="s">${all.filter(p => p.kind === 'missed').length} missed chances</div></div>
         <div class="card tile"><div class="v">${tried.length ? pct(solved.length, tried.length) + '%' : '—'}</div><div class="l">Solved first try</div><div class="s">${tried.length} attempted</div></div>
         <div class="card tile" style="cursor:pointer" onclick="go('puzzles',{kind:'due'})"><div class="v">${dueN}</div><div class="l">Due for review</div><div class="s">Missed puzzles come back</div></div></div>
-      <div class="filters"><div><label>From games in</label><span class="chips">${[['14', 'Last 2 weeks'], ['30', 'Last month'], ['90', 'Last 3 months'], ['all', 'All time']].map(([v, t]) => `<span class="chip ${this.f.since === v ? 'on' : ''}" data-since="${v}">${t} <span style="opacity:.7">${all.filter(p => this.inPeriod(p, v)).length}</span></span>`).join('')}</span></div>
+      <div class="filters"><div><label>From games in</label><span class="chips">${[['14', 'Last 2 weeks'], ['30', 'Last month'], ['90', 'Last 3 months'], ['all', 'All time']].map(([v, t]) => `<span class="chip ${(this.f.since === 'auto' ? this.autoSince() : this.f.since) === v ? 'on' : ''}" data-since="${v}">${t} <span style="opacity:.7">${all.filter(p => this.inPeriod(p, v)).length}</span></span>`).join('')}</span></div>
         <div><span class="chip ${this.f.multi ? 'on' : ''}" id="pzmulti">Multi-move only <span style="opacity:.7">${all.filter(p => p.line.length >= 3 && this.inPeriod(p)).length}</span></span></div></div>
       <div class="filters" style="margin-top:-6px"><div><label>Type</label><span class="chips">${[['all', 'All'], ['missed', 'Missed in game'], ['found', 'Found in game'], ['defense', 'Defense'], ['opening', 'Opening fixes'], ['due', 'Due']].map(([v, t]) => `<span class="chip ${this.f.kind === v ? 'on' : ''}" data-k="kind" data-v="${v}">${t}</span>`).join('')}</span></div>
         <div><label>Theme</label><select id="pth"><option value="all">All themes</option>${themes.map(t => `<option ${this.f.theme === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div></div>
@@ -61,8 +69,8 @@ VIEWS.puzzles = {
   leave() { clearTimeout(this.t); },
   start(p) {
     clearTimeout(this.t);
-    if (!p) { const recentUn = scoped().filter(g => !isAnalysed(g.id) && (this.f.since === 'all' || g.end >= Date.now() - (+this.f.since) * DAY)).length;
-      $('#pzinfo').innerHTML = `<span class="t2">No puzzles match these filters.${recentUn ? ` You have ${recentUn} unanalyzed games in this period.` : ''}</span>${recentUn ? `<div style="margin-top:8px"><button class="btn primary sm" onclick="Q.add(scoped().filter(g=>!isAnalysed(g.id)${this.f.since === 'all' ? '' : ' && g.end >= Date.now() - ' + (+this.f.since) + ' * DAY'}).map(g=>g.id));toast('Analyzing your recent games: puzzles appear as they finish')">Analyze them</button></div>` : ''}`; $('#pzstat').textContent = ''; this.board.set('8/8/8/8/8/8/8/8 w - - 0 1'); return; }
+    if (!p) { const sinceV = this.f.since === 'auto' ? this.autoSince() : this.f.since; const recentUn = scoped().filter(g => !isAnalysed(g.id) && (sinceV === 'all' || g.end >= Date.now() - (+sinceV) * DAY)).length;
+      $('#pzinfo').innerHTML = `<span class="t2">No puzzles match these filters.${recentUn ? ` You have ${recentUn} unanalyzed games in this period.` : ''}</span>${recentUn ? `<div style="margin-top:8px"><button class="btn primary sm" onclick="Q.add(scoped().filter(g=>!isAnalysed(g.id)${sinceV === 'all' ? '' : ' && g.end >= Date.now() - ' + (+sinceV) + ' * DAY'}).map(g=>g.id));toast('Analyzing your recent games: puzzles appear as they finish')">Analyze them</button></div>` : ''}`; $('#pzstat').textContent = ''; this.board.set('8/8/8/8/8/8/8/8 w - - 0 1'); return; }
     this.cur = p; this.step = 0; this.failed = false; this.done = false; this.busy = true; this.hinted = 0;
     this.board.orient = p.color;
     const g = S.byId.get(p.gameId);
