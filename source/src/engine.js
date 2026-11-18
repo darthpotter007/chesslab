@@ -135,7 +135,7 @@ const clsColor = c => `var(--c-${c})`;
 function icon(c) { if (!c) return ''; const s = CLS[c].sym; return `<span class="ic" style="background:${clsColor(c)};font-size:${s.length > 1 && s !== '!!' && s !== '?!' && s !== '??' ? 9 : 10}px" title="${CLS[c].name}">${c === 'excellent' ? '👍' : c === 'book' ? '📖' : s}</span>`; }
 
 const ANALYSIS_VER = 3;
-const CLS_VER = 6; // bump when classification rules change: re-labels saved analyses without re-running the engine
+const CLS_VER = 7; // bump when classification rules change: re-labels saved analyses without re-running the engine
 // Build positions & moves for a game
 function replay(g) {
   const ch = new Chess(g.startFen || undefined);
@@ -191,12 +191,11 @@ function classifyAll(g, a, fens, moves) {
         const inCheck = ch.in_check();
         // Brilliant, following chess.com's description: a good piece sacrifice (a piece, or the exchange) that is the
         // best or nearly best move, when you weren't already completely winning and aren't left worse off.
-        // Not: replies to check, king moves/castling, or a "sacrifice" in a dead-equal spot where other moves do the same.
+        // Not: replies to check (forced), king moves/castling, or when you were already completely winning (~+8 or more).
         // Like chess.com, lower-rated players get more leeway: giving up the exchange counts below 1800.
         const rating = mover === g.color ? g.me.rating : g.opp.rating;
         const need = rating && rating >= 1800 ? 3 : 2;
-        const deadEqual = !isBest && a.ev[i] && a.ev[i].cp != null && Math.abs(a.ev[i].cp) < 25;
-        if (!inCheck && nLegal > 2 && m.piece !== 'k' && !(m.piece === 'p' && !m.promotion) && wa >= 45 && wb < 92 && !(secW != null && secW >= 90 && !isBest) && !deadEqual && (sacNet(fens[i], u) ?? 0) <= -need) c = 'brilliant';
+        if (!inCheck && nLegal > 2 && m.piece !== 'k' && !(m.piece === 'p' && !m.promotion) && wa >= 45 && wb < 95 && !(secW != null && secW >= 90 && !isBest) && (sacNet(fens[i], u) ?? 0) <= -need) c = 'brilliant';
         else if (secW != null && isBest && wb - secW >= 20 && !recapture && !ch.in_check() && wa >= 30 && wb < 92 && !(secW >= 80) && (m.piece !== 'k' || m.flags.includes('k') || m.flags.includes('q')) && !escapesAttack(fens[i], m)) c = 'great';
       }
     }

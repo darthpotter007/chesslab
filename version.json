@@ -1,1 +1,1 @@
-{"build": "20261118-125508", "note": "Brilliant moves: balanced rules closer to chess.com (more generous, still no forced/king moves)"}
+{"build": "20261118-125732", "note": "Brilliant moves: back to the original rule, minus the exceptions (forced/check replies, king moves, already-won positions)"}
