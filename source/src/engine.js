@@ -115,6 +115,12 @@ function isSacrifice(fenBefore, uci) {
   return net <= -2;
 }
 
+// was the moved piece simply under attack (moving it away is the obvious move)?
+function escapesAttack(fen, m) {
+  const f = fen.split(' '); f[1] = f[1] === 'w' ? 'b' : 'w'; f[3] = '-';
+  const c = new Chess(); if (!c.load(f.join(' '))) return false;
+  return seeSq(c, m.from) > 0;
+}
 // ===== classification =====
 const CLS = {
   brilliant: { sym: '!!', name: 'Brilliant' }, great: { sym: '!', name: 'Great' }, best: { sym: '★', name: 'Best' },
@@ -127,7 +133,7 @@ const clsColor = c => `var(--c-${c})`;
 function icon(c) { if (!c) return ''; const s = CLS[c].sym; return `<span class="ic" style="background:${clsColor(c)};font-size:${s.length > 1 && s !== '!!' && s !== '?!' && s !== '??' ? 9 : 10}px" title="${CLS[c].name}">${c === 'excellent' ? '👍' : c === 'book' ? '📖' : s}</span>`; }
 
 const ANALYSIS_VER = 3;
-const CLS_VER = 2; // bump when classification rules change: re-labels saved analyses without re-running the engine
+const CLS_VER = 3; // bump when classification rules change: re-labels saved analyses without re-running the engine
 // Build positions & moves for a game
 function replay(g) {
   const ch = new Chess(g.startFen || undefined);
@@ -179,9 +185,9 @@ function classifyAll(g, a, fens, moves) {
       if ((c === 'mistake' || c === 'blunder') && prevL >= 0.10 && wb >= 60 && wb - winFor(a.ev[i - 1], mover) >= 10) c = 'miss';
       if ((c === 'best' || c === 'excellent') && l <= 0.02) {
         const secW = a.sec[i] ? winFor(a.sec[i], mover) : null;
-        const recapture = i > 0 && moves[i - 1].captured && m.to === moves[i - 1].to;
+        const recapture = i > 0 && m.captured && m.to === moves[i - 1].to;
         if (wa >= 45 && wb < 98 && !(m.piece === 'p' && !m.promotion) && isSacrifice(fens[i], u)) c = 'brilliant';
-        else if (secW != null && isBest && wb - secW >= 20 && !recapture && !ch.in_check() && wa >= 30 && wb < 92 && !(secW >= 80)) c = 'great';
+        else if (secW != null && isBest && wb - secW >= 20 && !recapture && !ch.in_check() && wa >= 30 && wb < 92 && !(secW >= 80) && (m.piece !== 'k' || m.flags.includes('k') || m.flags.includes('q')) && !escapesAttack(fens[i], m)) c = 'great';
       }
     }
     cls.push(c);
