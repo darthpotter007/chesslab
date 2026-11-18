@@ -145,10 +145,10 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--s2)}
 <body>
 <header><div class="logo">♟ Chess<span>Lab</span></div>
 <nav><a href="#stats">Stats</a><a href="#games">Games</a><a href="#review">Review</a><a href="#puzzles">Puzzles</a><a href="#highlights">Highlights</a><a href="#openings">Openings</a><a href="#rep">Repertoire</a><a href="#train">Coach</a><a href="#play">Play</a><a href="#import">Settings</a></nav>
-<div class="hdr-right"><span id="qstatus"></span><span id="who"></span></div></header>
+<div class="hdr-right"><span id="qstatus"></span><a id="syncdot" href="#import" style="color:var(--t3);text-decoration:none;font-size:12.5px"></a><span id="who"></span></div></header>
 <main></main><div id="tip"></div>
 <script src="vendor/chess.js"></script><script src="vendor/book.js"></script>
-<script>const PIECES={"wB": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48ZyBmaWxsPSIjZmZmIiBzdHJva2UtbGluZWNhcD0iYnV0dCI+PHBhdGggZD0iTTkgMzZjMy4zOS0uOTcgMTAuMTEuNDMgMTMuNS0yIDMuMzkgMi40MyAxMC4xMSAxLjAzIDEzLjUgMiAwIDAgMS42NS41NCAzIDItLjY4Ljk3LTEuNjUuOTktMyAuNS0zLjM5LS45Ny0xMC4xMS40Ni0xMy41LTEtMy4zOSAxLjQ2LTEwLjExLjAzLTEzLjUgMS0xLjM1LjQ5LTIuMzIuNDctMy0uNSAxLjM1LTEuOTQgMy0yIDMtMnoiLz48cGF0aCBkPSJNMTUgMzJjMi41IDIuNSAxMi41IDIuNSAxNSAwIC41LTEuNSAwLTIgMC0yIDAtMi41LTIuNS00LTIuNS00IDUuNS0xLjUgNi0xMS41LTUtMTUuNS0xMSA0LTEwLjUgMTQtNSAxNS41IDAgMC0yLjUgMS41LTIuNSA0IDAgMC0uNS41IDAgMnoiLz48cGF0aCBkPSJNMjUgOGEyLjUgMi41IDAgMSAxLTUgMCAyLjUgMi41IDAgMSAxIDUgMHoiLz48L2c+PHBhdGggc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgZD0iTTE3LjUgMjZoMTBNMTUgMzBoMTVtLTcuNS0xNC41djVNMjAgMThoNSIvPjwvZz48L3N2Zz4=", "wQ": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9IiNmZmYiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBkPSJNOCAxMmEyIDIgMCAxIDEtNCAwIDIgMiAwIDEgMSA0IDBtMTYuNS00LjVhMiAyIDAgMSAxLTQgMCAyIDIgMCAxIDEgNCAwTTQxIDEyYTIgMiAwIDEgMS00IDAgMiAyIDAgMSAxIDQgME0xNiA4LjVhMiAyIDAgMSAxLTQgMCAyIDIgMCAxIDEgNCAwTTMzIDlhMiAyIDAgMSAxLTQgMCAyIDIgMCAxIDEgNCAwIi8+PHBhdGggc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIGQ9Ik05IDI2YzguNS0xLjUgMjEtMS41IDI3IDBsMi0xMi03IDExVjExbC01LjUgMTMuNS0zLTE1LTMgMTUtNS41LTE0VjI1TDcgMTR6Ii8+PHBhdGggc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIGQ9Ik05IDI2YzAgMiAxLjUgMiAyLjUgNCAxIDEuNSAxIDEgLjUgMy41LTEuNSAxLTEuNSAyLjUtMS41IDIuNS0xLjUgMS41LjUgMi41LjUgMi41IDYuNSAxIDE2LjUgMSAyMyAwIDAgMCAxLjUtMSAwLTIuNSAwIDAgLjUtMS41LTEtMi41LS41LTIuNS0uNS0yIC41LTMuNSAxLTIgMi41LTIgMi41LTQtOC41LTEuNS0xOC41LTEuNS0yNyAweiIvPjxwYXRoIGZpbGw9Im5vbmUiIGQ9Ik0xMS41IDMwYzMuNS0xIDE4LjUtMSAyMiAwTTEyIDMzLjVjNi0xIDE1LTEgMjEgMCIvPjwvZz48L3N2Zz4=", "wR": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9IiNmZmYiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBzdHJva2UtbGluZWNhcD0iYnV0dCIgZD0iTTkgMzloMjd2LTNIOXptMy0zdi00aDIxdjR6bS0xLTIyVjloNHYyaDVWOWg1djJoNVY5aDR2NSIvPjxwYXRoIGQ9Im0zNCAxNC0zIDNIMTRsLTMtMyIvPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBkPSJNMzEgMTd2MTIuNUgxNFYxNyIvPjxwYXRoIGQ9Im0zMSAyOS41IDEuNSAyLjVoLTIwbDEuNS0yLjUiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBkPSJNMTEgMTRoMjMiLz48L2c+PC9zdmc+", "wP": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxwYXRoIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSIgZD0iTTIyLjUgOWMtMi4yMSAwLTQgMS43OS00IDQgMCAuODkuMjkgMS43MS43OCAyLjM4QzE3LjMzIDE2LjUgMTYgMTguNTkgMTYgMjFjMCAyLjAzLjk0IDMuODQgMi40MSA1LjAzLTMgMS4wNi03LjQxIDUuNTUtNy40MSAxMy40N2gyM2MwLTcuOTItNC40MS0xMi40MS03LjQxLTEzLjQ3IDEuNDctMS4xOSAyLjQxLTMgMi40MS01LjAzIDAtMi40MS0xLjMzLTQuNS0zLjI4LTUuNjIuNDktLjY3Ljc4LTEuNDkuNzgtMi4zOCAwLTIuMjEtMS43OS00LTQtNHoiLz48L3N2Zz4=", "bB": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48ZyBmaWxsPSIjMDAwIiBzdHJva2UtbGluZWNhcD0iYnV0dCI+PHBhdGggZD0iTTkgMzZjMy40LTEgMTAuMS40IDEzLjUtMiAzLjQgMi40IDEwLjEgMSAxMy41IDIgMCAwIDEuNi41IDMgMi0uNyAxLTEuNiAxLTMgLjUtMy40LTEtMTAuMS41LTEzLjUtMS0zLjQgMS41LTEwLjEgMC0xMy41IDEtMS40LjUtMi4zLjUtMy0uNSAxLjQtMiAzLTIgMy0yeiIvPjxwYXRoIGQ9Ik0xNSAzMmMyLjUgMi41IDEyLjUgMi41IDE1IDAgLjUtMS41IDAtMiAwLTIgMC0yLjUtMi41LTQtMi41LTQgNS41LTEuNSA2LTExLjUtNS0xNS41LTExIDQtMTAuNSAxNC01IDE1LjUgMCAwLTIuNSAxLjUtMi41IDQgMCAwLS41LjUgMCAyeiIvPjxwYXRoIGQ9Ik0yNSA4YTIuNSAyLjUgMCAxIDEtNSAwIDIuNSAyLjUgMCAxIDEgNSAweiIvPjwvZz48cGF0aCBzdHJva2U9IiNlY2VjZWMiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiIGQ9Ik0xNy41IDI2aDEwTTE1IDMwaDE1bS03LjUtMTQuNXY1TTIwIDE4aDUiLz48L2c+PC9zdmc+", "bR": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBzdHJva2UtbGluZWNhcD0iYnV0dCIgZD0iTTkgMzloMjd2LTNIOXptMy41LTcgMS41LTIuNWgxN2wxLjUgMi41em0tLjUgNHYtNGgyMXY0eiIvPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBkPSJNMTQgMjkuNXYtMTNoMTd2MTN6Ii8+PHBhdGggc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIGQ9Ik0xNCAxNi41IDExIDE0aDIzbC0zIDIuNXpNMTEgMTRWOWg0djJoNVY5aDV2Mmg1VjloNHY1eiIvPjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VjZWNlYyIgc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgc3Ryb2tlLXdpZHRoPSIxIiBkPSJNMTIgMzUuNWgyMW0tMjAtNGgxOW0tMTgtMmgxN20tMTctMTNoMTdNMTEgMTRoMjMiLz48L2c+PC9zdmc+", "bK": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgdmlld0JveD0iMCAwIDQ1IDQ1Ij48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSI+PHBhdGggc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgZD0iTTIyLjUgMTEuNlY2Ii8+PHBhdGggZmlsbD0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiIGQ9Ik0yMi41IDI1czQuNS03LjUgMy0xMC41YzAgMC0xLTIuNS0zLTIuNXMtMyAyLjUtMyAyLjVjLTEuNSAzIDMgMTAuNSAzIDEwLjUiLz48cGF0aCBmaWxsPSIjMDAwIiBkPSJNMTEuNSAzN2EyMi4zIDIyLjMgMCAwIDAgMjEgMHYtN3M5LTQuNSA2LTEwLjVjLTQtNi41LTEzLjUtMy41LTE2IDRWMjd2LTMuNWMtMy41LTcuNS0xMy0xMC41LTE2LTQtMyA2IDUgMTAgNSAxMHoiLz48cGF0aCBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBkPSJNMjAgOGg1Ii8+PHBhdGggc3Ryb2tlPSIjZWNlY2VjIiBkPSJNMzIgMjkuNXM4LjUtNCA2LTkuN0MzNC4xIDE0IDI1IDE4IDIyLjUgMjQuNnYyLjEtMi4xQzIwIDE4IDkuOSAxNCA3IDE5LjljLTIuNSA1LjYgNC44IDkgNC44IDkiLz48cGF0aCBzdHJva2U9IiNlY2VjZWMiIGQ9Ik0xMS41IDMwYzUuNS0zIDE1LjUtMyAyMSAwbS0yMSAzLjVjNS41LTMgMTUuNS0zIDIxIDBtLTIxIDMuNWM1LjUtMyAxNS41LTMgMjEgMCIvPjwvZz48L3N2Zz4=", "bQ": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48ZyBzdHJva2U9Im5vbmUiPjxjaXJjbGUgY3g9IjYiIGN5PSIxMiIgcj0iMi43NSIvPjxjaXJjbGUgY3g9IjE0IiBjeT0iOSIgcj0iMi43NSIvPjxjaXJjbGUgY3g9IjIyLjUiIGN5PSI4IiByPSIyLjc1Ii8+PGNpcmNsZSBjeD0iMzEiIGN5PSI5IiByPSIyLjc1Ii8+PGNpcmNsZSBjeD0iMzkiIGN5PSIxMiIgcj0iMi43NSIvPjwvZz48cGF0aCBzdHJva2UtbGluZWNhcD0iYnV0dCIgZD0iTTkgMjZjOC41LTEuNSAyMS0xLjUgMjcgMGwyLjUtMTIuNUwzMSAyNWwtLjMtMTQuMS01LjIgMTMuNi0zLTE0LjUtMyAxNC41LTUuMi0xMy42TDE0IDI1IDYuNSAxMy41eiIvPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJidXR0IiBkPSJNOSAyNmMwIDIgMS41IDIgMi41IDQgMSAxLjUgMSAxIC41IDMuNS0xLjUgMS0xLjUgMi41LTEuNSAyLjUtMS41IDEuNS41IDIuNS41IDIuNSA2LjUgMSAxNi41IDEgMjMgMCAwIDAgMS41LTEgMC0yLjUgMCAwIC41LTEuNS0xLTIuNS0uNS0yLjUtLjUtMiAuNS0zLjUgMS0yIDIuNS0yIDIuNS00LTguNS0xLjUtMTguNS0xLjUtMjcgMHoiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0iYnV0dCIgZD0iTTExIDM4LjVhMzUgMzUgMSAwIDAgMjMgMCIvPjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VjZWNlYyIgZD0iTTExIDI5YTM1IDM1IDEgMCAxIDIzIDBtLTIxLjUgMi41aDIwbS0yMSAzYTM1IDM1IDEgMCAwIDIyIDBtLTIzIDNhMzUgMzUgMSAwIDAgMjQgMCIvPjwvZz48L3N2Zz4=", "wN": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjIgMTBjMTAuNSAxIDE2LjUgOCAxNiAyOUgxNWMwLTkgMTAtNi41IDgtMjEiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjQgMThjLjM4IDIuOTEtNS41NSA3LjM3LTggOS0zIDItMi44MiA0LjM0LTUgNC0xLjA0Mi0uOTQgMS40MS0zLjA0IDAtMy0xIDAgLjE5IDEuMjMtMSAyLTEgMC00LjAwMyAxLTQtNCAwLTIgNi0xMiA2LTEyczEuODktMS45IDItMy41Yy0uNzMtLjk5NC0uNS0yLS41LTMgMS0xIDMgMi41IDMgMi41aDJzLjc4LTEuOTkyIDIuNS0zYzEgMCAxIDMgMSAzIi8+PHBhdGggZmlsbD0iIzAwMCIgZD0iTTkuNSAyNS41YS41LjUgMCAxIDEtMSAwIC41LjUgMCAxIDEgMSAwbTUuNDMzLTkuNzVhLjUgMS41IDMwIDEgMS0uODY2LS41LjUgMS41IDMwIDEgMSAuODY2LjUiLz48L2c+PC9zdmc+", "wK": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgdmlld0JveD0iMCAwIDQ1IDQ1Ij48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSI+PHBhdGggc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgZD0iTTIyLjUgMTEuNjNWNk0yMCA4aDUiLz48cGF0aCBmaWxsPSIjZmZmIiBzdHJva2UtbGluZWNhcD0iYnV0dCIgc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgZD0iTTIyLjUgMjVzNC41LTcuNSAzLTEwLjVjMCAwLTEtMi41LTMtMi41cy0zIDIuNS0zIDIuNWMtMS41IDMgMyAxMC41IDMgMTAuNSIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0xMS41IDM3YzUuNSAzLjUgMTUuNSAzLjUgMjEgMHYtN3M5LTQuNSA2LTEwLjVjLTQtNi41LTEzLjUtMy41LTE2IDRWMjd2LTMuNWMtMy41LTcuNS0xMy0xMC41LTE2LTQtMyA2IDUgMTAgNSAxMHoiLz48cGF0aCBkPSJNMTEuNSAzMGM1LjUtMyAxNS41LTMgMjEgMG0tMjEgMy41YzUuNS0zIDE1LjUtMyAyMSAwbS0yMSAzLjVjNS41LTMgMTUuNS0zIDIxIDAiLz48L2c+PC9zdmc+", "bP": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxwYXRoIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSIgZD0iTTIyLjUgOWE0IDQgMCAwIDAtMy4yMiA2LjM4IDYuNDggNi40OCAwIDAgMC0uODcgMTAuNjVjLTMgMS4wNi03LjQxIDUuNTUtNy40MSAxMy40N2gyM2MwLTcuOTItNC40MS0xMi40MS03LjQxLTEzLjQ3YTYuNDYgNi40NiAwIDAgMC0uODctMTAuNjVBNC4wMSA0LjAxIDAgMCAwIDIyLjUgOXoiLz48L3N2Zz4=", "bN": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBmaWxsPSIjMDAwIiBkPSJNMjIgMTBjMTAuNSAxIDE2LjUgOCAxNiAyOUgxNWMwLTkgMTAtNi41IDgtMjEiLz48cGF0aCBmaWxsPSIjMDAwIiBkPSJNMjQgMThjLjM4IDIuOTEtNS41NSA3LjM3LTggOS0zIDItMi44MiA0LjM0LTUgNC0xLjA0LS45NCAxLjQxLTMuMDQgMC0zLTEgMCAuMTkgMS4yMy0xIDItMSAwLTQgMS00LTQgMC0yIDYtMTIgNi0xMnMxLjg5LTEuOSAyLTMuNWMtLjczLTEtLjUtMi0uNS0zIDEtMSAzIDIuNSAzIDIuNWgycy43OC0yIDIuNS0zYzEgMCAxIDMgMSAzIi8+PHBhdGggZmlsbD0iI2VjZWNlYyIgc3Ryb2tlPSIjZWNlY2VjIiBkPSJNOS41IDI1LjVhLjUuNSAwIDEgMS0xIDAgLjUuNSAwIDEgMSAxIDBtNS40My05Ljc1YS41IDEuNSAzMCAxIDEtLjg2LS41LjUgMS41IDMwIDEgMSAuODYuNSIvPjxwYXRoIGZpbGw9IiNlY2VjZWMiIHN0cm9rZT0ibm9uZSIgZD0ibTI0LjU1IDEwLjQtLjQ1IDEuNDUuNS4xNWMzLjE1IDEgNS42NSAyLjQ5IDcuOSA2Ljc1UzM1Ljc1IDI5LjA2IDM1LjI1IDM5bC0uMDUuNWgyLjI1bC4wNS0uNWMuNS0xMC4wNi0uODgtMTYuODUtMy4yNS0yMS4zNHMtNS43OS02LjY0LTkuMTktNy4xNnoiLz48L2c+PC9zdmc+"};const BUILD_ID="20261118-023619";</script>
+<script>const PIECES={"wB": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48ZyBmaWxsPSIjZmZmIiBzdHJva2UtbGluZWNhcD0iYnV0dCI+PHBhdGggZD0iTTkgMzZjMy4zOS0uOTcgMTAuMTEuNDMgMTMuNS0yIDMuMzkgMi40MyAxMC4xMSAxLjAzIDEzLjUgMiAwIDAgMS42NS41NCAzIDItLjY4Ljk3LTEuNjUuOTktMyAuNS0zLjM5LS45Ny0xMC4xMS40Ni0xMy41LTEtMy4zOSAxLjQ2LTEwLjExLjAzLTEzLjUgMS0xLjM1LjQ5LTIuMzIuNDctMy0uNSAxLjM1LTEuOTQgMy0yIDMtMnoiLz48cGF0aCBkPSJNMTUgMzJjMi41IDIuNSAxMi41IDIuNSAxNSAwIC41LTEuNSAwLTIgMC0yIDAtMi41LTIuNS00LTIuNS00IDUuNS0xLjUgNi0xMS41LTUtMTUuNS0xMSA0LTEwLjUgMTQtNSAxNS41IDAgMC0yLjUgMS41LTIuNSA0IDAgMC0uNS41IDAgMnoiLz48cGF0aCBkPSJNMjUgOGEyLjUgMi41IDAgMSAxLTUgMCAyLjUgMi41IDAgMSAxIDUgMHoiLz48L2c+PHBhdGggc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgZD0iTTE3LjUgMjZoMTBNMTUgMzBoMTVtLTcuNS0xNC41djVNMjAgMThoNSIvPjwvZz48L3N2Zz4=", "wQ": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9IiNmZmYiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBkPSJNOCAxMmEyIDIgMCAxIDEtNCAwIDIgMiAwIDEgMSA0IDBtMTYuNS00LjVhMiAyIDAgMSAxLTQgMCAyIDIgMCAxIDEgNCAwTTQxIDEyYTIgMiAwIDEgMS00IDAgMiAyIDAgMSAxIDQgME0xNiA4LjVhMiAyIDAgMSAxLTQgMCAyIDIgMCAxIDEgNCAwTTMzIDlhMiAyIDAgMSAxLTQgMCAyIDIgMCAxIDEgNCAwIi8+PHBhdGggc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIGQ9Ik05IDI2YzguNS0xLjUgMjEtMS41IDI3IDBsMi0xMi03IDExVjExbC01LjUgMTMuNS0zLTE1LTMgMTUtNS41LTE0VjI1TDcgMTR6Ii8+PHBhdGggc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIGQ9Ik05IDI2YzAgMiAxLjUgMiAyLjUgNCAxIDEuNSAxIDEgLjUgMy41LTEuNSAxLTEuNSAyLjUtMS41IDIuNS0xLjUgMS41LjUgMi41LjUgMi41IDYuNSAxIDE2LjUgMSAyMyAwIDAgMCAxLjUtMSAwLTIuNSAwIDAgLjUtMS41LTEtMi41LS41LTIuNS0uNS0yIC41LTMuNSAxLTIgMi41LTIgMi41LTQtOC41LTEuNS0xOC41LTEuNS0yNyAweiIvPjxwYXRoIGZpbGw9Im5vbmUiIGQ9Ik0xMS41IDMwYzMuNS0xIDE4LjUtMSAyMiAwTTEyIDMzLjVjNi0xIDE1LTEgMjEgMCIvPjwvZz48L3N2Zz4=", "wR": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9IiNmZmYiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBzdHJva2UtbGluZWNhcD0iYnV0dCIgZD0iTTkgMzloMjd2LTNIOXptMy0zdi00aDIxdjR6bS0xLTIyVjloNHYyaDVWOWg1djJoNVY5aDR2NSIvPjxwYXRoIGQ9Im0zNCAxNC0zIDNIMTRsLTMtMyIvPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBkPSJNMzEgMTd2MTIuNUgxNFYxNyIvPjxwYXRoIGQ9Im0zMSAyOS41IDEuNSAyLjVoLTIwbDEuNS0yLjUiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBkPSJNMTEgMTRoMjMiLz48L2c+PC9zdmc+", "wP": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxwYXRoIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSIgZD0iTTIyLjUgOWMtMi4yMSAwLTQgMS43OS00IDQgMCAuODkuMjkgMS43MS43OCAyLjM4QzE3LjMzIDE2LjUgMTYgMTguNTkgMTYgMjFjMCAyLjAzLjk0IDMuODQgMi40MSA1LjAzLTMgMS4wNi03LjQxIDUuNTUtNy40MSAxMy40N2gyM2MwLTcuOTItNC40MS0xMi40MS03LjQxLTEzLjQ3IDEuNDctMS4xOSAyLjQxLTMgMi40MS01LjAzIDAtMi40MS0xLjMzLTQuNS0zLjI4LTUuNjIuNDktLjY3Ljc4LTEuNDkuNzgtMi4zOCAwLTIuMjEtMS43OS00LTQtNHoiLz48L3N2Zz4=", "bB": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48ZyBmaWxsPSIjMDAwIiBzdHJva2UtbGluZWNhcD0iYnV0dCI+PHBhdGggZD0iTTkgMzZjMy40LTEgMTAuMS40IDEzLjUtMiAzLjQgMi40IDEwLjEgMSAxMy41IDIgMCAwIDEuNi41IDMgMi0uNyAxLTEuNiAxLTMgLjUtMy40LTEtMTAuMS41LTEzLjUtMS0zLjQgMS41LTEwLjEgMC0xMy41IDEtMS40LjUtMi4zLjUtMy0uNSAxLjQtMiAzLTIgMy0yeiIvPjxwYXRoIGQ9Ik0xNSAzMmMyLjUgMi41IDEyLjUgMi41IDE1IDAgLjUtMS41IDAtMiAwLTIgMC0yLjUtMi41LTQtMi41LTQgNS41LTEuNSA2LTExLjUtNS0xNS41LTExIDQtMTAuNSAxNC01IDE1LjUgMCAwLTIuNSAxLjUtMi41IDQgMCAwLS41LjUgMCAyeiIvPjxwYXRoIGQ9Ik0yNSA4YTIuNSAyLjUgMCAxIDEtNSAwIDIuNSAyLjUgMCAxIDEgNSAweiIvPjwvZz48cGF0aCBzdHJva2U9IiNlY2VjZWMiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiIGQ9Ik0xNy41IDI2aDEwTTE1IDMwaDE1bS03LjUtMTQuNXY1TTIwIDE4aDUiLz48L2c+PC9zdmc+", "bR": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBzdHJva2UtbGluZWNhcD0iYnV0dCIgZD0iTTkgMzloMjd2LTNIOXptMy41LTcgMS41LTIuNWgxN2wxLjUgMi41em0tLjUgNHYtNGgyMXY0eiIvPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBkPSJNMTQgMjkuNXYtMTNoMTd2MTN6Ii8+PHBhdGggc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIGQ9Ik0xNCAxNi41IDExIDE0aDIzbC0zIDIuNXpNMTEgMTRWOWg0djJoNVY5aDV2Mmg1VjloNHY1eiIvPjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VjZWNlYyIgc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgc3Ryb2tlLXdpZHRoPSIxIiBkPSJNMTIgMzUuNWgyMW0tMjAtNGgxOW0tMTgtMmgxN20tMTctMTNoMTdNMTEgMTRoMjMiLz48L2c+PC9zdmc+", "bK": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgdmlld0JveD0iMCAwIDQ1IDQ1Ij48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSI+PHBhdGggc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgZD0iTTIyLjUgMTEuNlY2Ii8+PHBhdGggZmlsbD0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiIGQ9Ik0yMi41IDI1czQuNS03LjUgMy0xMC41YzAgMC0xLTIuNS0zLTIuNXMtMyAyLjUtMyAyLjVjLTEuNSAzIDMgMTAuNSAzIDEwLjUiLz48cGF0aCBmaWxsPSIjMDAwIiBkPSJNMTEuNSAzN2EyMi4zIDIyLjMgMCAwIDAgMjEgMHYtN3M5LTQuNSA2LTEwLjVjLTQtNi41LTEzLjUtMy41LTE2IDRWMjd2LTMuNWMtMy41LTcuNS0xMy0xMC41LTE2LTQtMyA2IDUgMTAgNSAxMHoiLz48cGF0aCBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBkPSJNMjAgOGg1Ii8+PHBhdGggc3Ryb2tlPSIjZWNlY2VjIiBkPSJNMzIgMjkuNXM4LjUtNCA2LTkuN0MzNC4xIDE0IDI1IDE4IDIyLjUgMjQuNnYyLjEtMi4xQzIwIDE4IDkuOSAxNCA3IDE5LjljLTIuNSA1LjYgNC44IDkgNC44IDkiLz48cGF0aCBzdHJva2U9IiNlY2VjZWMiIGQ9Ik0xMS41IDMwYzUuNS0zIDE1LjUtMyAyMSAwbS0yMSAzLjVjNS41LTMgMTUuNS0zIDIxIDBtLTIxIDMuNWM1LjUtMyAxNS41LTMgMjEgMCIvPjwvZz48L3N2Zz4=", "bQ": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48ZyBzdHJva2U9Im5vbmUiPjxjaXJjbGUgY3g9IjYiIGN5PSIxMiIgcj0iMi43NSIvPjxjaXJjbGUgY3g9IjE0IiBjeT0iOSIgcj0iMi43NSIvPjxjaXJjbGUgY3g9IjIyLjUiIGN5PSI4IiByPSIyLjc1Ii8+PGNpcmNsZSBjeD0iMzEiIGN5PSI5IiByPSIyLjc1Ii8+PGNpcmNsZSBjeD0iMzkiIGN5PSIxMiIgcj0iMi43NSIvPjwvZz48cGF0aCBzdHJva2UtbGluZWNhcD0iYnV0dCIgZD0iTTkgMjZjOC41LTEuNSAyMS0xLjUgMjcgMGwyLjUtMTIuNUwzMSAyNWwtLjMtMTQuMS01LjIgMTMuNi0zLTE0LjUtMyAxNC41LTUuMi0xMy42TDE0IDI1IDYuNSAxMy41eiIvPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJidXR0IiBkPSJNOSAyNmMwIDIgMS41IDIgMi41IDQgMSAxLjUgMSAxIC41IDMuNS0xLjUgMS0xLjUgMi41LTEuNSAyLjUtMS41IDEuNS41IDIuNS41IDIuNSA2LjUgMSAxNi41IDEgMjMgMCAwIDAgMS41LTEgMC0yLjUgMCAwIC41LTEuNS0xLTIuNS0uNS0yLjUtLjUtMiAuNS0zLjUgMS0yIDIuNS0yIDIuNS00LTguNS0xLjUtMTguNS0xLjUtMjcgMHoiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0iYnV0dCIgZD0iTTExIDM4LjVhMzUgMzUgMSAwIDAgMjMgMCIvPjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VjZWNlYyIgZD0iTTExIDI5YTM1IDM1IDEgMCAxIDIzIDBtLTIxLjUgMi41aDIwbS0yMSAzYTM1IDM1IDEgMCAwIDIyIDBtLTIzIDNhMzUgMzUgMSAwIDAgMjQgMCIvPjwvZz48L3N2Zz4=", "wN": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjIgMTBjMTAuNSAxIDE2LjUgOCAxNiAyOUgxNWMwLTkgMTAtNi41IDgtMjEiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjQgMThjLjM4IDIuOTEtNS41NSA3LjM3LTggOS0zIDItMi44MiA0LjM0LTUgNC0xLjA0Mi0uOTQgMS40MS0zLjA0IDAtMy0xIDAgLjE5IDEuMjMtMSAyLTEgMC00LjAwMyAxLTQtNCAwLTIgNi0xMiA2LTEyczEuODktMS45IDItMy41Yy0uNzMtLjk5NC0uNS0yLS41LTMgMS0xIDMgMi41IDMgMi41aDJzLjc4LTEuOTkyIDIuNS0zYzEgMCAxIDMgMSAzIi8+PHBhdGggZmlsbD0iIzAwMCIgZD0iTTkuNSAyNS41YS41LjUgMCAxIDEtMSAwIC41LjUgMCAxIDEgMSAwbTUuNDMzLTkuNzVhLjUgMS41IDMwIDEgMS0uODY2LS41LjUgMS41IDMwIDEgMSAuODY2LjUiLz48L2c+PC9zdmc+", "wK": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgdmlld0JveD0iMCAwIDQ1IDQ1Ij48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSI+PHBhdGggc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgZD0iTTIyLjUgMTEuNjNWNk0yMCA4aDUiLz48cGF0aCBmaWxsPSIjZmZmIiBzdHJva2UtbGluZWNhcD0iYnV0dCIgc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgZD0iTTIyLjUgMjVzNC41LTcuNSAzLTEwLjVjMCAwLTEtMi41LTMtMi41cy0zIDIuNS0zIDIuNWMtMS41IDMgMyAxMC41IDMgMTAuNSIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0xMS41IDM3YzUuNSAzLjUgMTUuNSAzLjUgMjEgMHYtN3M5LTQuNSA2LTEwLjVjLTQtNi41LTEzLjUtMy41LTE2IDRWMjd2LTMuNWMtMy41LTcuNS0xMy0xMC41LTE2LTQtMyA2IDUgMTAgNSAxMHoiLz48cGF0aCBkPSJNMTEuNSAzMGM1LjUtMyAxNS41LTMgMjEgMG0tMjEgMy41YzUuNS0zIDE1LjUtMyAyMSAwbS0yMSAzLjVjNS41LTMgMTUuNS0zIDIxIDAiLz48L2c+PC9zdmc+", "bP": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxwYXRoIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSIgZD0iTTIyLjUgOWE0IDQgMCAwIDAtMy4yMiA2LjM4IDYuNDggNi40OCAwIDAgMC0uODcgMTAuNjVjLTMgMS4wNi03LjQxIDUuNTUtNy40MSAxMy40N2gyM2MwLTcuOTItNC40MS0xMi40MS03LjQxLTEzLjQ3YTYuNDYgNi40NiAwIDAgMC0uODctMTAuNjVBNC4wMSA0LjAxIDAgMCAwIDIyLjUgOXoiLz48L3N2Zz4=", "bN": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJjb2xvci1zY2hlbWU6bGlnaHQgb25seSIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjQ1IiB2aWV3Qm94PSIwIDAgNDUgNDUiPjxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41Ij48cGF0aCBmaWxsPSIjMDAwIiBkPSJNMjIgMTBjMTAuNSAxIDE2LjUgOCAxNiAyOUgxNWMwLTkgMTAtNi41IDgtMjEiLz48cGF0aCBmaWxsPSIjMDAwIiBkPSJNMjQgMThjLjM4IDIuOTEtNS41NSA3LjM3LTggOS0zIDItMi44MiA0LjM0LTUgNC0xLjA0LS45NCAxLjQxLTMuMDQgMC0zLTEgMCAuMTkgMS4yMy0xIDItMSAwLTQgMS00LTQgMC0yIDYtMTIgNi0xMnMxLjg5LTEuOSAyLTMuNWMtLjczLTEtLjUtMi0uNS0zIDEtMSAzIDIuNSAzIDIuNWgycy43OC0yIDIuNS0zYzEgMCAxIDMgMSAzIi8+PHBhdGggZmlsbD0iI2VjZWNlYyIgc3Ryb2tlPSIjZWNlY2VjIiBkPSJNOS41IDI1LjVhLjUuNSAwIDEgMS0xIDAgLjUuNSAwIDEgMSAxIDBtNS40My05Ljc1YS41IDEuNSAzMCAxIDEtLjg2LS41LjUgMS41IDMwIDEgMSAuODYuNSIvPjxwYXRoIGZpbGw9IiNlY2VjZWMiIHN0cm9rZT0ibm9uZSIgZD0ibTI0LjU1IDEwLjQtLjQ1IDEuNDUuNS4xNWMzLjE1IDEgNS42NSAyLjQ5IDcuOSA2Ljc1UzM1Ljc1IDI5LjA2IDM1LjI1IDM5bC0uMDUuNWgyLjI1bC4wNS0uNWMuNS0xMC4wNi0uODgtMTYuODUtMy4yNS0yMS4zNHMtNS43OS02LjY0LTkuMTktNy4xNnoiLz48L2c+PC9zdmc+"};const BUILD_ID="20261118-120359";</script>
 <script>// ===== utilities =====
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -200,8 +200,9 @@ const DB = {
     });
   },
   async get(s, k) { if (!this.db) return this.mem[s].get(k); return this._tx(s, 'readonly', st => st.get(k)); },
-  async put(s, k, v) { if (!this.db) return this.mem[s].set(k, v); return this._tx(s, 'readwrite', st => st.put(v, k)); },
-  async putMany(s, entries) { if (!this.db) { for (const [k, v] of entries) this.mem[s].set(k, v); return; } return this._tx(s, 'readwrite', st => { for (const [k, v] of entries) st.put(v, k); }); },
+  async _raw(s, k, v) { if (!this.db) return this.mem[s].set(k, v); return this._tx(s, 'readwrite', st => st.put(v, k)); },
+  async put(s, k, v) { const r = await this._raw(s, k, v); if (typeof SYNC !== 'undefined') SYNC.touch(s, k); return r; },
+  async putMany(s, entries) { if (!this.db) { for (const [k, v] of entries) this.mem[s].set(k, v); } else await this._tx(s, 'readwrite', st => { for (const [k, v] of entries) st.put(v, k); }); if (typeof SYNC !== 'undefined') for (const [k] of entries) SYNC.touch(s, k); },
   async del(s, k) { if (!this.db) return this.mem[s].delete(k); return this._tx(s, 'readwrite', st => st.delete(k)); },
   async all(s) {
     if (!this.db) return [...this.mem[s].entries()];
@@ -511,23 +512,31 @@ function seeSq(ch, sq, d = 0) {
   best = Math.max(best, g);
   return best;
 }
-// after mover's move, can the opponent win >= 2 points net (a sacrifice)?
-function isSacrifice(fenBefore, uci) {
-  const ch = new Chess(fenBefore); const mover = ch.turn();
-  const before = material(ch, mover);
-  const mv = moveUci(ch, uci); if (!mv) return false;
-  if (ch.in_checkmate()) return false;
-  const afterMove = material(ch, mover);
+// best material the side NOT to move could grab right now (pieces worth 3+), via static exchange
+function oppBestGrab(ch) {
   let worst = 0;
   for (const m of ch.moves({ verbose: true })) {
     if (!m.captured || VAL[m.captured] < 3) continue;
     ch.move(m); const g = VAL[m.captured] - seeSq(ch, m.to); ch.undo();
     if (g > worst) worst = g;
   }
-  const net = afterMove - before - worst;
-  return net <= -2;
+  return worst;
 }
-
+// A real sacrifice: after the move the opponent can win >= 2 points net, AND the move itself created
+// that (the material was not already hanging before it, e.g. a rook left behind by a forced king move).
+function isSacrifice(fenBefore, uci) {
+  const ch = new Chess(fenBefore); const mover = ch.turn();
+  // what could the opponent already grab before our move? (flip the side to move)
+  let hangingBefore = 0;
+  if (!ch.in_check()) { const f = fenBefore.split(' '); f[1] = f[1] === 'w' ? 'b' : 'w'; f[3] = '-'; const c2 = new Chess(); if (c2.load(f.join(' '))) hangingBefore = oppBestGrab(c2); }
+  const before = material(ch, mover);
+  const mv = moveUci(ch, uci); if (!mv) return false;
+  if (ch.in_checkmate()) return false;
+  const afterMove = material(ch, mover);
+  const worst = oppBestGrab(ch);
+  const net = afterMove - before - worst;
+  return net <= -2 && worst > hangingBefore;
+}
 // was the moved piece simply under attack (moving it away is the obvious move)?
 function escapesAttack(fen, m) {
   const f = fen.split(' '); f[1] = f[1] === 'w' ? 'b' : 'w'; f[3] = '-';
@@ -546,7 +555,7 @@ const clsColor = c => `var(--c-${c})`;
 function icon(c) { if (!c) return ''; const s = CLS[c].sym; return `<span class="ic" style="background:${clsColor(c)};font-size:${s.length > 1 && s !== '!!' && s !== '?!' && s !== '??' ? 9 : 10}px" title="${CLS[c].name}">${c === 'excellent' ? '👍' : c === 'book' ? '📖' : s}</span>`; }
 
 const ANALYSIS_VER = 3;
-const CLS_VER = 3; // bump when classification rules change: re-labels saved analyses without re-running the engine
+const CLS_VER = 4; // bump when classification rules change: re-labels saved analyses without re-running the engine
 // Build positions & moves for a game
 function replay(g) {
   const ch = new Chess(g.startFen || undefined);
@@ -599,7 +608,10 @@ function classifyAll(g, a, fens, moves) {
       if ((c === 'best' || c === 'excellent') && l <= 0.02) {
         const secW = a.sec[i] ? winFor(a.sec[i], mover) : null;
         const recapture = i > 0 && m.captured && m.to === moves[i - 1].to;
-        if (wa >= 45 && wb < 98 && !(m.piece === 'p' && !m.promotion) && isSacrifice(fens[i], u)) c = 'brilliant';
+        const inCheck = ch.in_check();
+        // Brilliant = a real, voluntary sacrifice that the engine rates as the top move, when the position
+        // wasn't already won anyway: not a reply to check, not a king move, not when a quiet alternative wins just as well.
+        if (isBest && !inCheck && nLegal > 2 && m.piece !== 'k' && !(m.piece === 'p' && !m.promotion) && wa >= 50 && wb < 90 && !(secW != null && secW >= 80) && isSacrifice(fens[i], u)) c = 'brilliant';
         else if (secW != null && isBest && wb - secW >= 20 && !recapture && !ch.in_check() && wa >= 30 && wb < 92 && !(secW >= 80) && (m.piece !== 'k' || m.flags.includes('k') || m.flags.includes('q')) && !escapesAttack(fens[i], m)) c = 'great';
       }
     }
@@ -740,11 +752,13 @@ function isAnalysed(id) { const a = S.analysis.get(id); return a && a.ver === AN
 
 // ===== Board widget =====
 const FILES = 'abcdefgh';
+// arrow colours like chess.com: right-drag = orange, +Shift green, +Ctrl/Cmd red, +Alt blue
+function annColor(e) { return e.shiftKey ? '#5fb03c' : (e.ctrlKey || e.metaKey) ? '#e04a3b' : e.altKey ? '#4b8fe3' : '#f2a53b'; }
 class Board {
   constructor(el, opts = {}) {
     this.el = el; el.classList.add('board'); el.innerHTML = '';
     this.orient = opts.orient || 'w'; this.canMove = opts.canMove || (() => false); this.onMove = opts.onMove || (() => { });
-    this.fen = null; this.sel = null; this.opts = {};
+    this.fen = null; this.sel = null; this.opts = {}; this.ann = { arrows: [], circles: [] };
     this.sqEls = {};
     for (let r = 0; r < 8; r++) for (let f = 0; f < 8; f++) { const d = document.createElement('div'); d.className = 'sq ' + ((r + f) % 2 ? 'd' : 'l'); el.appendChild(d); this.sqEls[r * 8 + f] = d; }
     this.layer = document.createElement('div'); this.layer.style.cssText = 'position:absolute;inset:0;pointer-events:none'; el.appendChild(this.layer);
@@ -757,7 +771,8 @@ class Board {
   xy(sq) { const f = FILES.indexOf(sq[0]), r = +sq[1] - 1; return this.orient === 'w' ? [f, 7 - r] : [7 - f, r]; }
   sqAt(e) { const b = this.el.getBoundingClientRect(); const x = Math.floor((e.clientX - b.left) / b.width * 8), y = Math.floor((e.clientY - b.top) / b.height * 8); if (x < 0 || x > 7 || y < 0 || y > 7) return null; return this.orient === 'w' ? FILES[x] + (8 - y) : FILES[7 - x] + (y + 1); }
   flip() { this.orient = this.orient === 'w' ? 'b' : 'w'; this.render(); }
-  set(fen, opts = {}) { this.fen = fen; this.opts = opts; this.sel = null; this.render(); }
+  set(fen, opts = {}) { if (fen !== this.fen) this.ann = { arrows: [], circles: [] }; this.fen = fen; this.opts = opts; this.sel = null; this.render(); }
+  clearAnn() { if (this.ann.arrows.length || this.ann.circles.length) { this.ann = { arrows: [], circles: [] }; this.render(); } }
   render() {
     if (!this.fen) return;
     const ch = new Chess(this.fen); this.ch = ch;
@@ -788,16 +803,26 @@ class Board {
     if (this.sel) for (const m of ch.moves({ square: this.sel, verbose: true })) { const [x, y] = this.xy(m.to); h += `<div class="dot ${m.captured ? 'cap' : ''}" style="left:${x * 12.5}%;top:${y * 12.5}%"></div>`; }
     if (o.badge) { const [x, y] = this.xy(o.badge.sq); h += `<div class="badge" style="left:${x * 12.5 + 9.4}%;top:${y * 12.5 - 2}%;background:${clsColor(o.badge.cls)};${y === 0 ? 'top:0.5%' : ''}${x === 7 ? ';left:' + (x * 12.5 + 7.6) + '%' : ''}">${CLS[o.badge.cls].sym === '👍' ? '👍' : CLS[o.badge.cls].sym === '📖' ? '📖' : CLS[o.badge.cls].sym}</div>`; }
     this.layer.innerHTML = h;
-    // arrows
+    // arrows (engine/app arrows + arrows/circles you draw with right-click)
+    const arrows = [...(o.arrows || []), ...this.ann.arrows];
+    const uid = this._uid();
     let s = '<defs>';
-    const arrows = o.arrows || [];
-    arrows.forEach((a, i) => { s += `<marker id="ah${i}${this._uid()}" markerWidth="4" markerHeight="4" refX="2.05" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 z" fill="${a.color}"/></marker>`; });
+    arrows.forEach((a, i) => { s += `<marker id="ah${i}${uid}" markerWidth="4" markerHeight="4" refX="2.05" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 z" fill="${a.color}"/></marker>`; });
     s += '</defs>';
+    for (const c of this.ann.circles) { const [x, y] = this.xy(c.sq); s += `<circle cx="${x + .5}" cy="${y + .5}" r=".44" fill="none" stroke="${c.color}" stroke-width=".08" opacity=".85"/>`; }
     arrows.forEach((a, i) => {
       const [x1, y1] = this.xy(a.u.slice(0, 2)), [x2, y2] = this.xy(a.u.slice(2, 4));
-      const cx1 = x1 + .5, cy1 = y1 + .5, cx2 = x2 + .5, cy2 = y2 + .5; const dx = cx2 - cx1, dy = cy2 - cy1, L = Math.hypot(dx, dy);
-      const ex = cx2 - dx / L * .32, ey = cy2 - dy / L * .32;
-      s += `<line x1="${cx1}" y1="${cy1}" x2="${ex}" y2="${ey}" stroke="${a.color}" stroke-width="${a.w || .17}" stroke-linecap="round" opacity="${a.op || .8}" marker-end="url(#ah${i}${this._uidv})"/>`;
+      const cx1 = x1 + .5, cy1 = y1 + .5, cx2 = x2 + .5, cy2 = y2 + .5;
+      const w = a.w || (a.user ? .16 : .17), op = a.op || (a.user ? .85 : .8);
+      const adx = Math.abs(x2 - x1), ady = Math.abs(y2 - y1);
+      if ((adx === 1 && ady === 2) || (adx === 2 && ady === 1)) { // knight move: L-shaped arrow
+        const mx = ady === 2 ? cx1 : cx2, my = ady === 2 ? cy2 : cy1;
+        const dx = cx2 - mx, dy = cy2 - my, L = Math.hypot(dx, dy); const ex = cx2 - dx / L * .32, ey = cy2 - dy / L * .32;
+        s += `<polyline points="${cx1},${cy1} ${mx},${my} ${ex},${ey}" fill="none" stroke="${a.color}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round" opacity="${op}" marker-end="url(#ah${i}${uid})"/>`;
+      } else {
+        const dx = cx2 - cx1, dy = cy2 - cy1, L = Math.hypot(dx, dy); const ex = cx2 - dx / L * .32, ey = cy2 - dy / L * .32;
+        s += `<line x1="${cx1}" y1="${cy1}" x2="${ex}" y2="${ey}" stroke="${a.color}" stroke-width="${w}" stroke-linecap="round" opacity="${op}" marker-end="url(#ah${i}${uid})"/>`;
+      }
     });
     this.svg.innerHTML = s;
   }
@@ -805,7 +830,10 @@ class Board {
   _king(ch, col) { const B = ch.board(); for (let r = 0; r < 8; r++) for (let f = 0; f < 8; f++) { const p = B[r][f]; if (p && p.type === 'k' && p.color === col) return FILES[f] + (8 - r); } }
   _idx(sq) { const [x, y] = this.xy(sq); return y * 8 + x; }
   _down(e) {
-    if (e.button !== 0 || !this.fen) return;
+    if (!this.fen) return;
+    if (e.button === 2) { const sq = this.sqAt(e); if (sq) this.rdrag = { from: sq, color: annColor(e) }; e.preventDefault(); return; }
+    if (e.button !== 0) return;
+    this.clearAnn();
     const sq = this.sqAt(e); if (!sq) return;
     const ch = this.ch; const p = ch.get(sq);
     if (this.sel && this.sel !== sq) {
@@ -826,6 +854,12 @@ class Board {
     d.img.style.left = (e.clientX - b.left - s / 2) / b.width * 100 + '%'; d.img.style.top = (e.clientY - b.top - s / 2) / b.height * 100 + '%';
   }
   _up(e) {
+    if (this.rdrag && e.button === 2) {
+      const r = this.rdrag; this.rdrag = null; const to = this.sqAt(e); if (!to) return;
+      if (to === r.from) { const i = this.ann.circles.findIndex(c => c.sq === to && c.color === r.color); if (i >= 0) this.ann.circles.splice(i, 1); else { this.ann.circles = this.ann.circles.filter(c => c.sq !== to); this.ann.circles.push({ sq: to, color: r.color }); } }
+      else { const u = r.from + to; const i = this.ann.arrows.findIndex(a => a.u === u && a.color === r.color); if (i >= 0) this.ann.arrows.splice(i, 1); else { this.ann.arrows = this.ann.arrows.filter(a => a.u !== u); this.ann.arrows.push({ u, color: r.color, user: true }); } }
+      this.render(); return;
+    }
     const d = this.drag; if (!d) return; this.drag = null;
     const sq = this.sqAt(e);
     if (d.moved && sq && sq !== d.from) { this._try(d.from, sq); return; }
@@ -923,6 +957,7 @@ VIEWS.import = {
         <div class="t2" style="margin-bottom:6px">Time controls to include in stats, analysis, puzzles and training:</div>
         <div class="row" id="tcset">${['rapid', 'blitz', 'daily', 'bullet'].map(t => `<label class="chip ${S.settings.tcs[t] !== false ? 'on' : ''}" style="user-select:none"><input type="checkbox" data-tc="${t}" ${S.settings.tcs[t] !== false ? 'checked' : ''} style="display:none">${t[0].toUpperCase() + t.slice(1)} <span style="opacity:.7">${S.games.filter(g => g.tc === t).length}</span></label>`).join('')}</div>
         <div class="note" style="margin-top:6px">Bullet is off by default: fast games are noisy and teach less. You can turn it back on anytime.</div></div>
+      <div class="card" style="text-align:left;margin-top:14px"><h2>☁ Cloud sync (GitHub)</h2><div id="syncbox"></div></div>
       <div class="card" style="text-align:left;margin-top:14px"><h2>Save your progress</h2>
         <p class="t2">Your games, analyses, puzzle progress and repertoire are saved automatically <b>in this browser</b>. They stay until you clear your browser data. Download a backup now and then; restore it in any browser or on another computer.</p>
         <div class="row"><button class="btn primary" id="bkexp">Download backup</button><label class="btn">Restore from backup<input type="file" id="bkimp" accept=".gz,.json" style="display:none"></label><span class="note" id="bkst"></span></div>
@@ -950,6 +985,7 @@ VIEWS.import = {
       let est = ''; try { const e = await navigator.storage.estimate(); est = ` Using ${(e.usage / 1048576).toFixed(1)} MB.`; } catch (e) { }
       const el = $('#bkinfo'); if (el) el.innerHTML = `Last backup: <b>${lb ? fmtDate(lb) : 'never'}</b>. ${prot ? '✓ This browser has agreed not to auto-clear ChessLab data.' : 'This browser may clear site data if your disk gets full; backups protect you.'}${est}`;
     })();
+    drawSyncBox();
     $('#bkexp').onclick = async () => { $('#bkst').textContent = 'Preparing…'; try { const n = await exportBackup(); $('#bkst').textContent = `Saved (${(n / 1048576).toFixed(1)} MB). Check your Downloads folder.`; } catch (e) { $('#bkst').textContent = 'Backup failed: ' + e.message; } };
     $('#bkimp').onchange = async e => { const f = e.target.files[0]; if (!f) return; $('#bkst').textContent = 'Restoring…'; try { const d = await importBackup(f); $('#bkst').textContent = `Restored backup from ${fmtDate(d.at)}. Reloading…`; setTimeout(() => location.reload(), 900); } catch (err) { $('#bkst').textContent = 'Restore failed: ' + err.message; } };
     $('#uname').onkeydown = e => { if (e.key === 'Enter') $('#go').click(); };
@@ -1004,6 +1040,28 @@ VIEWS.games = {
   },
   onAnalysed() { if (this.draw && !_refreshT) _refreshT = setTimeout(() => { _refreshT = null; if (CURVIEW === 'games') this.draw(); }, 1500); }
 };
+
+function drawSyncBox() {
+  const el = $('#syncbox'); if (!el) return;
+  if (SYNC.on()) {
+    el.innerHTML = `<p class="t2">Connected as <b>@${esc(SYNC.login || localStorage.getItem('cl_gh_login') || '')}</b>. Your analyses, puzzles, repertoire and settings save to a private gist and sync automatically. On another laptop, open this site and connect with the same token.</p>
+      <div class="row"><button class="btn primary" id="synow">Sync now</button><button class="btn" id="syoff">Disconnect this browser</button><span class="note" id="syncst">${SYNC.status || ''}</span></div>`;
+    $('#synow').onclick = () => SYNC.sync();
+    $('#syoff').onclick = () => { SYNC.disconnect(); drawSyncBox(); };
+    return;
+  }
+  el.innerHTML = `<p class="t2">Keep your progress in a private gist on your GitHub account, so it follows you to any computer. Free, and nothing new to sign up for.</p>
+    <ol class="t2" style="padding-left:20px;margin:8px 0">
+      <li><a href="https://github.com/settings/tokens/new?scopes=gist&description=ChessLab%20sync" target="_blank">Create a GitHub token</a> (opens GitHub with the right setting already ticked: <b>gist</b> only). For Expiration pick <b>No expiration</b>, then click <b>Generate token</b> at the bottom.</li>
+      <li>Copy the token (starts with <code>ghp_</code>) and paste it here. It's stored only in this browser and can only touch your gists.</li></ol>
+    <div class="row"><input id="sytok" type="password" placeholder="ghp_…" style="flex:1;min-width:260px" autocomplete="off"><button class="btn primary" id="syon">Connect</button></div>
+    <div class="note" id="syncst" style="margin-top:6px"></div>`;
+  $('#syon').onclick = async () => {
+    const t = $('#sytok').value.trim(); if (!t) return;
+    $('#syncst').textContent = 'Connecting…';
+    try { await SYNC.connect(t); SYNC.start(); drawSyncBox(); } catch (e) { localStorage.removeItem('cl_gh_token'); $('#syncst').textContent = '⚠ ' + e.message; }
+  };
+}
 
 // ===== chart helpers =====
 const TC_COLORS = { bullet: '#3987e5', blitz: '#d95926', rapid: '#199e70', daily: '#c98500', unknown: '#9085e9' };
@@ -1225,7 +1283,7 @@ VIEWS.review = {
         <div class="boardwrap">${EVALBAR_HTML}<div style="flex:1"><div id="rb"></div></div></div>
         <div class="plyr" id="pbot"></div>
         <div class="navbtns"><button class="btn" data-n="start">⏮</button><button class="btn" data-n="prev">◀</button><button class="btn" data-n="next">▶</button><button class="btn" data-n="end">⏭</button><button class="btn" data-n="flip" data-tip="Flip board (F)">⇅</button></div>
-        <div class="note" style="margin-top:6px">Use ← → keys. Drag pieces to try your own moves; the engine evaluates them live.</div>
+        <div class="note" style="margin-top:6px">Use ← → keys. Drag pieces to try your own moves; the engine evaluates them live. Right-click drag to draw arrows (hold Shift, Ctrl or Alt for other colours), right-click a square to circle it.</div>
       </div>
       <div class="grid" style="gap:12px">
         <div class="card" id="rhead"></div>
@@ -1819,9 +1877,14 @@ VIEWS.play = {
 // ===== Repertoire: build, edit, spaced-repetition drills (Chessreps-style) =====
 const REP = {
   data: null,
-  async load() { this.data = (await DB.get('kv', 'rep')) || { w: this.empty(), b: this.empty() }; return this.data; },
+  async load() { this.data = (await DB.get('kv', 'rep')) || { w: this.empty(), b: this.empty() }; this._last = { w: JSON.stringify(this.data.w), b: JSON.stringify(this.data.b) }; return this.data; },
   empty() { return { my: {}, opp: {}, srs: {}, built: 0 }; },
-  save() { return DB.put('kv', 'rep', this.data); },
+  save() {
+    // stamp whichever colour actually changed, so cloud sync can merge White and Black independently
+    this._last = this._last || {};
+    for (const c of ['w', 'b']) { const { mod, ...rest } = this.data[c]; const j = JSON.stringify(rest); if (this._last[c] !== j) { this.data[c].mod = Date.now(); this._last[c] = j; } }
+    return DB.put('kv', 'rep', this.data);
+  },
   c(color) { return this.data[color]; }
 };
 const pk = path => path.join(' ');
@@ -2186,6 +2249,144 @@ async function protectStorage() {
   return false;
 }
 
+// ===== Cloud sync via a private GitHub Gist =====
+// What syncs: analyses, puzzles (+ your progress on them), repertoire + drill progress, settings, practice rating.
+// Games themselves are re-imported from chess.com on a new device (automatic after the first sync).
+const SYNC = {
+  NB: 32, DESC: 'ChessLab sync (managed by the app, do not edit)',
+  dirty: new Set(), busy: false, timer: null, status: '', login: '',
+  token() { try { return localStorage.getItem('cl_gh_token') || ''; } catch (e) { return ''; } },
+  gist() { try { return localStorage.getItem('cl_gist_id') || ''; } catch (e) { return ''; } },
+  on() { return !!(this.token() && this.gist()); },
+  async api(path, opts = {}) {
+    const r = await fetch('https://api.github.com' + path, { ...opts, cache: 'no-store', headers: { Authorization: 'Bearer ' + this.token(), Accept: 'application/vnd.github+json', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) } });
+    if (r.status === 401) throw new Error('GitHub rejected the token (expired or revoked). Reconnect in Settings.');
+    if (!r.ok) throw new Error('GitHub error ' + r.status);
+    return r.status === 204 ? null : r.json();
+  },
+  bucket(id) { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0; return Math.abs(h) % this.NB; },
+  async enc(obj) {
+    const gz = await new Response(new Blob([JSON.stringify(obj)]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+    const u = new Uint8Array(gz); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+    return btoa(s);
+  },
+  async dec(b64) {
+    const bin = atob(b64.trim()); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return JSON.parse(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).text());
+  },
+  // called by DB.put / putMany: remember what changed so only that is uploaded
+  touch(store, key) {
+    if (this.applying) return;
+    if (store === 'analysis') this.dirty.add('a' + this.bucket(String(key)));
+    else if (store === 'puzzles') this.dirty.add('p' + this.bucket(String(key)) % 4);
+    else if (store === 'kv' && ['rep', 'prating', 'settings', 'user'].includes(key)) { this.dirty.add('meta'); DB._raw('kv', 'metaMod', Date.now()); }
+    else return;
+    this.schedule();
+  },
+  schedule(ms = 20000) { if (!this.on()) return; clearTimeout(this.timer); this.timer = setTimeout(() => this.push().catch(e => this.fail(e)), ms); },
+  setStatus(s) { this.status = s; const el = $('#syncst'); if (el) el.innerHTML = s; const hd = $('#syncdot'); if (hd) { hd.textContent = this.on() ? (this.busy ? '☁ syncing…' : '☁ synced') : ''; hd.title = s.replace(/<[^>]+>/g, ''); } },
+  fail(e) { console.error(e); this.busy = false; this.setStatus('⚠ ' + esc(e.message)); },
+  async connect(token) {
+    localStorage.setItem('cl_gh_token', token.trim());
+    const me = await this.api('/user'); this.login = me.login; localStorage.setItem('cl_gh_login', me.login);
+    let id = '';
+    for (let page = 1; page <= 5 && !id; page++) { const list = await this.api(`/gists?per_page=100&page=${page}`); const g = list.find(x => x.description === this.DESC); if (g) id = g.id; if (list.length < 100) break; }
+    if (!id) { const g = await this.api('/gists', { method: 'POST', body: JSON.stringify({ description: this.DESC, public: false, files: { 'README.md': { content: 'Private backup of ChessLab progress (analyses, puzzles, repertoire).\nManaged automatically by https://darthpotter007.github.io/chesslab/ — please do not edit.' } } }) }); id = g.id; }
+    localStorage.setItem('cl_gist_id', id);
+    return this.sync(true);
+  },
+  disconnect() { localStorage.removeItem('cl_gh_token'); localStorage.removeItem('cl_gist_id'); this.setStatus('Not connected'); },
+  async readFiles() {
+    const g = await this.api('/gists/' + this.gist()); const out = {};
+    for (const [name, f] of Object.entries(g.files)) {
+      if (!name.endsWith('.b64')) continue;
+      let c = f.content; if (f.truncated) c = await (await fetch(f.raw_url, { cache: 'no-store' })).text();
+      out[name.replace('.b64', '')] = c;
+    }
+    return out;
+  },
+  // pull remote, merge record by record (newest wins), then push whatever is newer here
+  async sync(first = false) {
+    if (!this.on() || this.busy) return; this.busy = true; this.setStatus('Syncing…');
+    try {
+      const files = await this.readFiles(); let got = 0; this.applying = true;
+      // analyses
+      for (let b = 0; b < this.NB; b++) {
+        const key = 'a' + b; const remote = files[key] ? await this.dec(files[key]) : {};
+        const local = [...S.analysis.entries()].filter(([id]) => this.bucket(id) === b);
+        const put = [];
+        for (const [id, a] of Object.entries(remote)) { const l = S.analysis.get(id); if (!l || (a.at || 0) > (l.at || 0)) { S.analysis.set(id, a); put.push([id, a]); got++; } }
+        if (put.length) await DB.putMany('analysis', put);
+        if (local.some(([id, a]) => !remote[id] || (a.at || 0) > (remote[id].at || 0))) this.dirty.add(key);
+      }
+      // puzzles
+      for (let b = 0; b < 4; b++) {
+        const key = 'p' + b; const remote = files[key] ? await this.dec(files[key]) : {};
+        const ts = p => Math.max(p.last || 0, p.created || 0);
+        const put = [];
+        for (const [id, p] of Object.entries(remote)) { const l = S.puzzles.get(id); if (!l || ts(p) > ts(l)) { S.puzzles.set(id, p); put.push([id, p]); got++; } }
+        if (put.length) await DB.putMany('puzzles', put);
+        if ([...S.puzzles.entries()].some(([id, p]) => this.bucket(id) % 4 === b && (!remote[id] || ts(p) > ts(remote[id])))) this.dirty.add(key);
+      }
+      // meta: settings, practice rating, repertoire (per colour, newest wins), username
+      if (files.meta) {
+        const m = await this.dec(files.meta); const myMod = (await DB.get('kv', 'metaMod')) || 0;
+        const rep = (await DB.get('kv', 'rep')) || { w: REP.empty(), b: REP.empty() };
+        let repChanged = false;
+        for (const c of ['w', 'b']) if (m.rep && m.rep[c] && (m.rep[c].mod || m.rep[c].built || 0) > (rep[c].mod || rep[c].built || 0)) { rep[c] = m.rep[c]; repChanged = true; }
+        if (repChanged) { await DB.put('kv', 'rep', rep); REP.data = rep; got++; }
+        if ((m.mod || 0) > myMod) {
+          if (m.settings) { S.settings = m.settings; await DB.put('kv', 'settings', m.settings); }
+          if (m.prating) await DB.put('kv', 'prating', m.prating);
+          if (m.user && !S.user) { S.user = m.user; await DB.put('kv', 'user', m.user); }
+          await DB.put('kv', 'metaMod', m.mod); got++;
+        } else if (myMod > (m.mod || 0)) this.dirty.add('meta');
+        for (const c of ['w', 'b']) if ((rep[c].mod || rep[c].built || 0) > ((m.rep && m.rep[c] && (m.rep[c].mod || m.rep[c].built)) || 0)) this.dirty.add('meta');
+      } else this.dirty.add('meta');
+      this.applying = false;
+      if (got) { recalib(); userHdr(); }
+      await this.push(true);
+      await DB.put('kv', 'syncAt', Date.now());
+      this.setStatus(`✓ Synced ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${got ? ` · ${got} update${got === 1 ? '' : 's'} pulled from the cloud` : ''}`);
+      // brand-new device: fetch the games too
+      if (first && S.user && !S.games.length) { this.setStatus('✓ Synced. Importing your games from chess.com…'); try { await importChessCom(S.user, () => { }); rebuildGames(); userHdr(); } catch (e) { } this.setStatus('✓ Synced, games imported'); }
+      if (got && VIEWS[CURVIEW] && CURVIEW !== 'review' && CURVIEW !== 'play') render();
+    } catch (e) { this.applying = false; this.fail(e); }
+    this.busy = false; this.setStatus(this.status);
+  },
+  async push(inSync = false) {
+    if (!this.on() || (!inSync && this.busy) || !this.dirty.size) return;
+    if (!inSync) { this.busy = true; this.setStatus('Uploading…'); }
+    try {
+      const keys = [...this.dirty]; this.dirty.clear(); const files = {};
+      for (const k of keys) {
+        let obj;
+        if (k === 'meta') { const rep = (await DB.get('kv', 'rep')) || null; obj = { v: 1, mod: (await DB.get('kv', 'metaMod')) || Date.now(), user: S.user, settings: S.settings, prating: await DB.get('kv', 'prating'), rep }; }
+        else if (k[0] === 'a') { const b = +k.slice(1); obj = {}; for (const [id, a] of S.analysis) if (this.bucket(id) === b) obj[id] = a; }
+        else { const b = +k.slice(1); obj = {}; for (const [id, p] of S.puzzles) if (this.bucket(id) % 4 === b) obj[id] = p; }
+        files[k + '.b64'] = { content: await this.enc(obj) };
+      }
+      // GitHub limits request size: send in batches
+      const names = Object.keys(files); let batch = {}, size = 0;
+      const send = async () => { if (!Object.keys(batch).length) return; await this.api('/gists/' + this.gist(), { method: 'PATCH', body: JSON.stringify({ files: batch }) }); batch = {}; size = 0; };
+      for (const n of names) { batch[n] = files[n]; size += files[n].content.length; if (size > 3e6) await send(); }
+      await send();
+      if (!inSync) { this.busy = false; this.setStatus(`✓ Synced ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`); }
+    } catch (e) { if (!inSync) this.fail(e); else throw e; }
+  },
+  start() {
+    if (!this.on()) return;
+    this.login = localStorage.getItem('cl_gh_login') || '';
+    this.sync();
+    setInterval(() => { if (this.dirty.size) this.push().catch(e => this.fail(e)); }, 180000);
+    let lastPull = Date.now();
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { if (this.dirty.size) this.push().catch(e => this.fail(e)); }
+      else if (Date.now() - lastPull > 60000) { lastPull = Date.now(); this.sync(); }
+    });
+  }
+};
+
 // ===== boot =====
 const DEFAULT_USER = 'darthpotter007';
 (async function boot() {
@@ -2196,6 +2397,7 @@ const DEFAULT_USER = 'darthpotter007';
   protectStorage();
   userHdr();
   render();
+  try { SYNC.start(); } catch (e) { console.error(e); }
   // gentle backup reminder once there is progress worth saving
   setTimeout(async () => { const lb = await DB.get('kv', 'lastBackup'); const hasProgress = S.analysis.size >= 20 || [...S.puzzles.values()].some(p => p.tries);
     if (hasProgress && (!lb || Date.now() - lb > 14 * DAY)) { const d = document.createElement('div'); d.className = 'toast'; d.style.cssText += ';display:flex;gap:12px;align-items:center;bottom:70px'; d.innerHTML = `<span>💾 ${lb ? "It's been a while since your last backup." : 'Back up your progress so it can never get lost.'}</span><button class="btn primary sm">Back up now</button><button class="btn sm">Later</button>`; const [b1, b2] = d.querySelectorAll('button'); b1.onclick = async () => { await exportBackup(); d.remove(); toast('Backup saved to your Downloads'); }; b2.onclick = async () => { await DB.put('kv', 'lastBackup', Date.now() - 7 * DAY); d.remove(); }; document.body.appendChild(d); } }, 8000);

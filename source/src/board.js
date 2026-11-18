@@ -1,10 +1,12 @@
 // ===== Board widget =====
 const FILES = 'abcdefgh';
+// arrow colours like chess.com: right-drag = orange, +Shift green, +Ctrl/Cmd red, +Alt blue
+function annColor(e) { return e.shiftKey ? '#5fb03c' : (e.ctrlKey || e.metaKey) ? '#e04a3b' : e.altKey ? '#4b8fe3' : '#f2a53b'; }
 class Board {
   constructor(el, opts = {}) {
     this.el = el; el.classList.add('board'); el.innerHTML = '';
     this.orient = opts.orient || 'w'; this.canMove = opts.canMove || (() => false); this.onMove = opts.onMove || (() => { });
-    this.fen = null; this.sel = null; this.opts = {};
+    this.fen = null; this.sel = null; this.opts = {}; this.ann = { arrows: [], circles: [] };
     this.sqEls = {};
     for (let r = 0; r < 8; r++) for (let f = 0; f < 8; f++) { const d = document.createElement('div'); d.className = 'sq ' + ((r + f) % 2 ? 'd' : 'l'); el.appendChild(d); this.sqEls[r * 8 + f] = d; }
     this.layer = document.createElement('div'); this.layer.style.cssText = 'position:absolute;inset:0;pointer-events:none'; el.appendChild(this.layer);
@@ -17,7 +19,8 @@ class Board {
   xy(sq) { const f = FILES.indexOf(sq[0]), r = +sq[1] - 1; return this.orient === 'w' ? [f, 7 - r] : [7 - f, r]; }
   sqAt(e) { const b = this.el.getBoundingClientRect(); const x = Math.floor((e.clientX - b.left) / b.width * 8), y = Math.floor((e.clientY - b.top) / b.height * 8); if (x < 0 || x > 7 || y < 0 || y > 7) return null; return this.orient === 'w' ? FILES[x] + (8 - y) : FILES[7 - x] + (y + 1); }
   flip() { this.orient = this.orient === 'w' ? 'b' : 'w'; this.render(); }
-  set(fen, opts = {}) { this.fen = fen; this.opts = opts; this.sel = null; this.render(); }
+  set(fen, opts = {}) { if (fen !== this.fen) this.ann = { arrows: [], circles: [] }; this.fen = fen; this.opts = opts; this.sel = null; this.render(); }
+  clearAnn() { if (this.ann.arrows.length || this.ann.circles.length) { this.ann = { arrows: [], circles: [] }; this.render(); } }
   render() {
     if (!this.fen) return;
     const ch = new Chess(this.fen); this.ch = ch;
@@ -48,16 +51,26 @@ class Board {
     if (this.sel) for (const m of ch.moves({ square: this.sel, verbose: true })) { const [x, y] = this.xy(m.to); h += `<div class="dot ${m.captured ? 'cap' : ''}" style="left:${x * 12.5}%;top:${y * 12.5}%"></div>`; }
     if (o.badge) { const [x, y] = this.xy(o.badge.sq); h += `<div class="badge" style="left:${x * 12.5 + 9.4}%;top:${y * 12.5 - 2}%;background:${clsColor(o.badge.cls)};${y === 0 ? 'top:0.5%' : ''}${x === 7 ? ';left:' + (x * 12.5 + 7.6) + '%' : ''}">${CLS[o.badge.cls].sym === '👍' ? '👍' : CLS[o.badge.cls].sym === '📖' ? '📖' : CLS[o.badge.cls].sym}</div>`; }
     this.layer.innerHTML = h;
-    // arrows
+    // arrows (engine/app arrows + arrows/circles you draw with right-click)
+    const arrows = [...(o.arrows || []), ...this.ann.arrows];
+    const uid = this._uid();
     let s = '<defs>';
-    const arrows = o.arrows || [];
-    arrows.forEach((a, i) => { s += `<marker id="ah${i}${this._uid()}" markerWidth="4" markerHeight="4" refX="2.05" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 z" fill="${a.color}"/></marker>`; });
+    arrows.forEach((a, i) => { s += `<marker id="ah${i}${uid}" markerWidth="4" markerHeight="4" refX="2.05" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 z" fill="${a.color}"/></marker>`; });
     s += '</defs>';
+    for (const c of this.ann.circles) { const [x, y] = this.xy(c.sq); s += `<circle cx="${x + .5}" cy="${y + .5}" r=".44" fill="none" stroke="${c.color}" stroke-width=".08" opacity=".85"/>`; }
     arrows.forEach((a, i) => {
       const [x1, y1] = this.xy(a.u.slice(0, 2)), [x2, y2] = this.xy(a.u.slice(2, 4));
-      const cx1 = x1 + .5, cy1 = y1 + .5, cx2 = x2 + .5, cy2 = y2 + .5; const dx = cx2 - cx1, dy = cy2 - cy1, L = Math.hypot(dx, dy);
-      const ex = cx2 - dx / L * .32, ey = cy2 - dy / L * .32;
-      s += `<line x1="${cx1}" y1="${cy1}" x2="${ex}" y2="${ey}" stroke="${a.color}" stroke-width="${a.w || .17}" stroke-linecap="round" opacity="${a.op || .8}" marker-end="url(#ah${i}${this._uidv})"/>`;
+      const cx1 = x1 + .5, cy1 = y1 + .5, cx2 = x2 + .5, cy2 = y2 + .5;
+      const w = a.w || (a.user ? .16 : .17), op = a.op || (a.user ? .85 : .8);
+      const adx = Math.abs(x2 - x1), ady = Math.abs(y2 - y1);
+      if ((adx === 1 && ady === 2) || (adx === 2 && ady === 1)) { // knight move: L-shaped arrow
+        const mx = ady === 2 ? cx1 : cx2, my = ady === 2 ? cy2 : cy1;
+        const dx = cx2 - mx, dy = cy2 - my, L = Math.hypot(dx, dy); const ex = cx2 - dx / L * .32, ey = cy2 - dy / L * .32;
+        s += `<polyline points="${cx1},${cy1} ${mx},${my} ${ex},${ey}" fill="none" stroke="${a.color}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round" opacity="${op}" marker-end="url(#ah${i}${uid})"/>`;
+      } else {
+        const dx = cx2 - cx1, dy = cy2 - cy1, L = Math.hypot(dx, dy); const ex = cx2 - dx / L * .32, ey = cy2 - dy / L * .32;
+        s += `<line x1="${cx1}" y1="${cy1}" x2="${ex}" y2="${ey}" stroke="${a.color}" stroke-width="${w}" stroke-linecap="round" opacity="${op}" marker-end="url(#ah${i}${uid})"/>`;
+      }
     });
     this.svg.innerHTML = s;
   }
@@ -65,7 +78,10 @@ class Board {
   _king(ch, col) { const B = ch.board(); for (let r = 0; r < 8; r++) for (let f = 0; f < 8; f++) { const p = B[r][f]; if (p && p.type === 'k' && p.color === col) return FILES[f] + (8 - r); } }
   _idx(sq) { const [x, y] = this.xy(sq); return y * 8 + x; }
   _down(e) {
-    if (e.button !== 0 || !this.fen) return;
+    if (!this.fen) return;
+    if (e.button === 2) { const sq = this.sqAt(e); if (sq) this.rdrag = { from: sq, color: annColor(e) }; e.preventDefault(); return; }
+    if (e.button !== 0) return;
+    this.clearAnn();
     const sq = this.sqAt(e); if (!sq) return;
     const ch = this.ch; const p = ch.get(sq);
     if (this.sel && this.sel !== sq) {
@@ -86,6 +102,12 @@ class Board {
     d.img.style.left = (e.clientX - b.left - s / 2) / b.width * 100 + '%'; d.img.style.top = (e.clientY - b.top - s / 2) / b.height * 100 + '%';
   }
   _up(e) {
+    if (this.rdrag && e.button === 2) {
+      const r = this.rdrag; this.rdrag = null; const to = this.sqAt(e); if (!to) return;
+      if (to === r.from) { const i = this.ann.circles.findIndex(c => c.sq === to && c.color === r.color); if (i >= 0) this.ann.circles.splice(i, 1); else { this.ann.circles = this.ann.circles.filter(c => c.sq !== to); this.ann.circles.push({ sq: to, color: r.color }); } }
+      else { const u = r.from + to; const i = this.ann.arrows.findIndex(a => a.u === u && a.color === r.color); if (i >= 0) this.ann.arrows.splice(i, 1); else { this.ann.arrows = this.ann.arrows.filter(a => a.u !== u); this.ann.arrows.push({ u, color: r.color, user: true }); } }
+      this.render(); return;
+    }
     const d = this.drag; if (!d) return; this.drag = null;
     const sq = this.sqAt(e);
     if (d.moved && sq && sq !== d.from) { this._try(d.from, sq); return; }

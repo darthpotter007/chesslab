@@ -49,8 +49,9 @@ const DB = {
     });
   },
   async get(s, k) { if (!this.db) return this.mem[s].get(k); return this._tx(s, 'readonly', st => st.get(k)); },
-  async put(s, k, v) { if (!this.db) return this.mem[s].set(k, v); return this._tx(s, 'readwrite', st => st.put(v, k)); },
-  async putMany(s, entries) { if (!this.db) { for (const [k, v] of entries) this.mem[s].set(k, v); return; } return this._tx(s, 'readwrite', st => { for (const [k, v] of entries) st.put(v, k); }); },
+  async _raw(s, k, v) { if (!this.db) return this.mem[s].set(k, v); return this._tx(s, 'readwrite', st => st.put(v, k)); },
+  async put(s, k, v) { const r = await this._raw(s, k, v); if (typeof SYNC !== 'undefined') SYNC.touch(s, k); return r; },
+  async putMany(s, entries) { if (!this.db) { for (const [k, v] of entries) this.mem[s].set(k, v); } else await this._tx(s, 'readwrite', st => { for (const [k, v] of entries) st.put(v, k); }); if (typeof SYNC !== 'undefined') for (const [k] of entries) SYNC.touch(s, k); },
   async del(s, k) { if (!this.db) return this.mem[s].delete(k); return this._tx(s, 'readwrite', st => st.delete(k)); },
   async all(s) {
     if (!this.db) return [...this.mem[s].entries()];

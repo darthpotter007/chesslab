@@ -61,6 +61,7 @@ VIEWS.import = {
         <div class="t2" style="margin-bottom:6px">Time controls to include in stats, analysis, puzzles and training:</div>
         <div class="row" id="tcset">${['rapid', 'blitz', 'daily', 'bullet'].map(t => `<label class="chip ${S.settings.tcs[t] !== false ? 'on' : ''}" style="user-select:none"><input type="checkbox" data-tc="${t}" ${S.settings.tcs[t] !== false ? 'checked' : ''} style="display:none">${t[0].toUpperCase() + t.slice(1)} <span style="opacity:.7">${S.games.filter(g => g.tc === t).length}</span></label>`).join('')}</div>
         <div class="note" style="margin-top:6px">Bullet is off by default: fast games are noisy and teach less. You can turn it back on anytime.</div></div>
+      <div class="card" style="text-align:left;margin-top:14px"><h2>☁ Cloud sync (GitHub)</h2><div id="syncbox"></div></div>
       <div class="card" style="text-align:left;margin-top:14px"><h2>Save your progress</h2>
         <p class="t2">Your games, analyses, puzzle progress and repertoire are saved automatically <b>in this browser</b>. They stay until you clear your browser data. Download a backup now and then; restore it in any browser or on another computer.</p>
         <div class="row"><button class="btn primary" id="bkexp">Download backup</button><label class="btn">Restore from backup<input type="file" id="bkimp" accept=".gz,.json" style="display:none"></label><span class="note" id="bkst"></span></div>
@@ -88,6 +89,7 @@ VIEWS.import = {
       let est = ''; try { const e = await navigator.storage.estimate(); est = ` Using ${(e.usage / 1048576).toFixed(1)} MB.`; } catch (e) { }
       const el = $('#bkinfo'); if (el) el.innerHTML = `Last backup: <b>${lb ? fmtDate(lb) : 'never'}</b>. ${prot ? '✓ This browser has agreed not to auto-clear ChessLab data.' : 'This browser may clear site data if your disk gets full; backups protect you.'}${est}`;
     })();
+    drawSyncBox();
     $('#bkexp').onclick = async () => { $('#bkst').textContent = 'Preparing…'; try { const n = await exportBackup(); $('#bkst').textContent = `Saved (${(n / 1048576).toFixed(1)} MB). Check your Downloads folder.`; } catch (e) { $('#bkst').textContent = 'Backup failed: ' + e.message; } };
     $('#bkimp').onchange = async e => { const f = e.target.files[0]; if (!f) return; $('#bkst').textContent = 'Restoring…'; try { const d = await importBackup(f); $('#bkst').textContent = `Restored backup from ${fmtDate(d.at)}. Reloading…`; setTimeout(() => location.reload(), 900); } catch (err) { $('#bkst').textContent = 'Restore failed: ' + err.message; } };
     $('#uname').onkeydown = e => { if (e.key === 'Enter') $('#go').click(); };
@@ -142,3 +144,25 @@ VIEWS.games = {
   },
   onAnalysed() { if (this.draw && !_refreshT) _refreshT = setTimeout(() => { _refreshT = null; if (CURVIEW === 'games') this.draw(); }, 1500); }
 };
+
+function drawSyncBox() {
+  const el = $('#syncbox'); if (!el) return;
+  if (SYNC.on()) {
+    el.innerHTML = `<p class="t2">Connected as <b>@${esc(SYNC.login || localStorage.getItem('cl_gh_login') || '')}</b>. Your analyses, puzzles, repertoire and settings save to a private gist and sync automatically. On another laptop, open this site and connect with the same token.</p>
+      <div class="row"><button class="btn primary" id="synow">Sync now</button><button class="btn" id="syoff">Disconnect this browser</button><span class="note" id="syncst">${SYNC.status || ''}</span></div>`;
+    $('#synow').onclick = () => SYNC.sync();
+    $('#syoff').onclick = () => { SYNC.disconnect(); drawSyncBox(); };
+    return;
+  }
+  el.innerHTML = `<p class="t2">Keep your progress in a private gist on your GitHub account, so it follows you to any computer. Free, and nothing new to sign up for.</p>
+    <ol class="t2" style="padding-left:20px;margin:8px 0">
+      <li><a href="https://github.com/settings/tokens/new?scopes=gist&description=ChessLab%20sync" target="_blank">Create a GitHub token</a> (opens GitHub with the right setting already ticked: <b>gist</b> only). For Expiration pick <b>No expiration</b>, then click <b>Generate token</b> at the bottom.</li>
+      <li>Copy the token (starts with <code>ghp_</code>) and paste it here. It's stored only in this browser and can only touch your gists.</li></ol>
+    <div class="row"><input id="sytok" type="password" placeholder="ghp_…" style="flex:1;min-width:260px" autocomplete="off"><button class="btn primary" id="syon">Connect</button></div>
+    <div class="note" id="syncst" style="margin-top:6px"></div>`;
+  $('#syon').onclick = async () => {
+    const t = $('#sytok').value.trim(); if (!t) return;
+    $('#syncst').textContent = 'Connecting…';
+    try { await SYNC.connect(t); SYNC.start(); drawSyncBox(); } catch (e) { localStorage.removeItem('cl_gh_token'); $('#syncst').textContent = '⚠ ' + e.message; }
+  };
+}

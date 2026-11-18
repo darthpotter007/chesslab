@@ -1,9 +1,14 @@
 // ===== Repertoire: build, edit, spaced-repetition drills (Chessreps-style) =====
 const REP = {
   data: null,
-  async load() { this.data = (await DB.get('kv', 'rep')) || { w: this.empty(), b: this.empty() }; return this.data; },
+  async load() { this.data = (await DB.get('kv', 'rep')) || { w: this.empty(), b: this.empty() }; this._last = { w: JSON.stringify(this.data.w), b: JSON.stringify(this.data.b) }; return this.data; },
   empty() { return { my: {}, opp: {}, srs: {}, built: 0 }; },
-  save() { return DB.put('kv', 'rep', this.data); },
+  save() {
+    // stamp whichever colour actually changed, so cloud sync can merge White and Black independently
+    this._last = this._last || {};
+    for (const c of ['w', 'b']) { const { mod, ...rest } = this.data[c]; const j = JSON.stringify(rest); if (this._last[c] !== j) { this.data[c].mod = Date.now(); this._last[c] = j; } }
+    return DB.put('kv', 'rep', this.data);
+  },
   c(color) { return this.data[color]; }
 };
 const pk = path => path.join(' ');

@@ -27,7 +27,7 @@ VIEWS.review = {
         <div class="boardwrap">${EVALBAR_HTML}<div style="flex:1"><div id="rb"></div></div></div>
         <div class="plyr" id="pbot"></div>
         <div class="navbtns"><button class="btn" data-n="start">⏮</button><button class="btn" data-n="prev">◀</button><button class="btn" data-n="next">▶</button><button class="btn" data-n="end">⏭</button><button class="btn" data-n="flip" data-tip="Flip board (F)">⇅</button></div>
-        <div class="note" style="margin-top:6px">Use ← → keys. Drag pieces to try your own moves; the engine evaluates them live.</div>
+        <div class="note" style="margin-top:6px">Use ← → keys. Drag pieces to try your own moves; the engine evaluates them live. Right-click drag to draw arrows (hold Shift, Ctrl or Alt for other colours), right-click a square to circle it.</div>
       </div>
       <div class="grid" style="gap:12px">
         <div class="card" id="rhead"></div>

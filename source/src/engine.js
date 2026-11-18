@@ -98,23 +98,31 @@ function seeSq(ch, sq, d = 0) {
   best = Math.max(best, g);
   return best;
 }
-// after mover's move, can the opponent win >= 2 points net (a sacrifice)?
-function isSacrifice(fenBefore, uci) {
-  const ch = new Chess(fenBefore); const mover = ch.turn();
-  const before = material(ch, mover);
-  const mv = moveUci(ch, uci); if (!mv) return false;
-  if (ch.in_checkmate()) return false;
-  const afterMove = material(ch, mover);
+// best material the side NOT to move could grab right now (pieces worth 3+), via static exchange
+function oppBestGrab(ch) {
   let worst = 0;
   for (const m of ch.moves({ verbose: true })) {
     if (!m.captured || VAL[m.captured] < 3) continue;
     ch.move(m); const g = VAL[m.captured] - seeSq(ch, m.to); ch.undo();
     if (g > worst) worst = g;
   }
-  const net = afterMove - before - worst;
-  return net <= -2;
+  return worst;
 }
-
+// A real sacrifice: after the move the opponent can win >= 2 points net, AND the move itself created
+// that (the material was not already hanging before it, e.g. a rook left behind by a forced king move).
+function isSacrifice(fenBefore, uci) {
+  const ch = new Chess(fenBefore); const mover = ch.turn();
+  // what could the opponent already grab before our move? (flip the side to move)
+  let hangingBefore = 0;
+  if (!ch.in_check()) { const f = fenBefore.split(' '); f[1] = f[1] === 'w' ? 'b' : 'w'; f[3] = '-'; const c2 = new Chess(); if (c2.load(f.join(' '))) hangingBefore = oppBestGrab(c2); }
+  const before = material(ch, mover);
+  const mv = moveUci(ch, uci); if (!mv) return false;
+  if (ch.in_checkmate()) return false;
+  const afterMove = material(ch, mover);
+  const worst = oppBestGrab(ch);
+  const net = afterMove - before - worst;
+  return net <= -2 && worst > hangingBefore;
+}
 // was the moved piece simply under attack (moving it away is the obvious move)?
 function escapesAttack(fen, m) {
   const f = fen.split(' '); f[1] = f[1] === 'w' ? 'b' : 'w'; f[3] = '-';
@@ -133,7 +141,7 @@ const clsColor = c => `var(--c-${c})`;
 function icon(c) { if (!c) return ''; const s = CLS[c].sym; return `<span class="ic" style="background:${clsColor(c)};font-size:${s.length > 1 && s !== '!!' && s !== '?!' && s !== '??' ? 9 : 10}px" title="${CLS[c].name}">${c === 'excellent' ? '👍' : c === 'book' ? '📖' : s}</span>`; }
 
 const ANALYSIS_VER = 3;
-const CLS_VER = 3; // bump when classification rules change: re-labels saved analyses without re-running the engine
+const CLS_VER = 4; // bump when classification rules change: re-labels saved analyses without re-running the engine
 // Build positions & moves for a game
 function replay(g) {
   const ch = new Chess(g.startFen || undefined);
@@ -186,7 +194,10 @@ function classifyAll(g, a, fens, moves) {
       if ((c === 'best' || c === 'excellent') && l <= 0.02) {
         const secW = a.sec[i] ? winFor(a.sec[i], mover) : null;
         const recapture = i > 0 && m.captured && m.to === moves[i - 1].to;
-        if (wa >= 45 && wb < 98 && !(m.piece === 'p' && !m.promotion) && isSacrifice(fens[i], u)) c = 'brilliant';
+        const inCheck = ch.in_check();
+        // Brilliant = a real, voluntary sacrifice that the engine rates as the top move, when the position
+        // wasn't already won anyway: not a reply to check, not a king move, not when a quiet alternative wins just as well.
+        if (isBest && !inCheck && nLegal > 2 && m.piece !== 'k' && !(m.piece === 'p' && !m.promotion) && wa >= 50 && wb < 90 && !(secW != null && secW >= 80) && isSacrifice(fens[i], u)) c = 'brilliant';
         else if (secW != null && isBest && wb - secW >= 20 && !recapture && !ch.in_check() && wa >= 30 && wb < 92 && !(secW >= 80) && (m.piece !== 'k' || m.flags.includes('k') || m.flags.includes('q')) && !escapesAttack(fens[i], m)) c = 'great';
       }
     }
