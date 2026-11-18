@@ -3,7 +3,7 @@ VIEWS.train = {
   show(m) {
     this.acts = [];
     const gs = filtered(); const an = gs.filter(g => isAnalysed(g.id)); const un = gs.filter(g => !isAnalysed(g.id));
-    const qn = Q.items.length + (Q.cur ? 1 : 0);
+    const qn = Q.items.length + Q.active.size;
     let h = `<div class="row" style="margin-bottom:14px"><div><h1>Your coach</h1><div class="t2">Built from ${gs.length} games (${an.length} engine-analyzed). Change the scope with the filters on Stats, or time controls in Settings.</div></div><span class="sp"></span>
       ${un.length ? `<button class="btn ${an.length < 20 ? 'primary' : ''}" id="tan">Analyze ${Math.min(50, un.length)} more games</button>` : ''}</div>`;
     if (an.length < 5) h += `<div class="card" style="margin-bottom:14px"><b>${an.length < 1 ? 'Analyze some games to get coaching.' : 'Almost there.'}</b> <span class="t2">The coach needs at least 5 analyzed games, and 30 or more for reliable patterns. ${qn ? `${qn} games are in the queue right now.` : ''}</span></div>`;

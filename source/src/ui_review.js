@@ -46,7 +46,7 @@ VIEWS.review = {
   leave() { document.removeEventListener('keydown', this.key); liveStop(); },
   get a() { return isAnalysed(this.g.id) ? S.analysis.get(this.g.id) : null; },
   renderHead() {
-    const g = this.g; const queued = Q.cur === g.id || Q.items.includes(g.id);
+    const g = this.g;
     $('#rhead').innerHTML = `<div class="row"><span class="res ${g.result}">${g.result === 'win' ? 'W' : g.result === 'loss' ? 'L' : '½'}</span>
       <div><b>${esc(g.color === 'w' ? g.me.name : g.opp.name)}</b> (${(g.color === 'w' ? g.me.rating : g.opp.rating) || '?'}) vs <b>${esc(g.color === 'b' ? g.me.name : g.opp.name)}</b> (${(g.color === 'b' ? g.me.rating : g.opp.rating) || '?'})<div class="note">${fmtDate(g.end)} · ${g.tc} ${esc(g.tcStr || '')} · ${esc(g.opening)} · ${g.result === 'win' ? 'You won' : g.result === 'loss' ? 'You lost' : 'Draw'} by ${esc(g.how)}</div></div>
       <span class="sp"></span>${g.url ? `<a href="${esc(g.url)}" target="_blank" class="note">chess.com ↗</a>` : ''}</div>${(() => { const d = repDeviation(g); if (!d || d.type === 'end') return ''; return `<div class="note" style="margin-top:6px">📚 Repertoire: ${d.type === 'me' ? `<span style="color:var(--c-mistake)">you played ${esc(d.played)} at move ${Math.floor(d.ply / 2) + 1}; your prep says <b>${esc(d.expected)}</b></span>` : `opponent left your prep at move ${Math.floor(d.ply / 2) + 1} with ${esc(d.played)}`} · <a href="#" id="rgoply" data-p="${d.ply + 1}">jump there</a></div>`; })()}`;
@@ -55,9 +55,9 @@ VIEWS.review = {
   renderSummary() {
     const a = this.a, g = this.g, el = $('#rsum');
     if (!a) {
-      const queued = Q.cur === g.id || Q.items.includes(g.id);
-      el.innerHTML = `<div class="row"><div><b>Game review</b><div class="note">Runs Stockfish 17.1 on every move: classifications, accuracy, best moves and puzzles from this game.</div></div><span class="sp"></span>${queued ? `<span class="pill"><span class="dot"></span>${Q.cur === g.id ? 'Analyzing… ' + Math.round((Q.frac || 0) * 100) + '%' : 'Queued'}</span>` : `<select id="rdepth"><option value="12">Depth 12 (fast)</option><option value="16" selected>Depth 16</option><option value="20">Depth 20 (slow)</option></select><button class="btn primary" id="ranal">Analyze game</button>`}</div>`;
-      const b = $('#ranal'); if (b) b.onclick = () => { const d = +$('#rdepth').value; const old = Q.depth; Q.items = Q.items.filter(x => x !== g.id); Q.items.unshift(g.id); Q.depthOverride = Q.depthOverride || {}; Q.depthOverride[g.id] = d; Q.total = Q.done + Q.items.length + (Q.cur ? 1 : 0); Q.run(); updateStatus(); this.renderSummary(); };
+      const queued = Q.busy(g.id);
+      el.innerHTML = `<div class="row"><div><b>Game review</b><div class="note">Runs Stockfish 17.1 on every move: classifications, accuracy, best moves and puzzles from this game.</div></div><span class="sp"></span>${queued ? `<span class="pill"><span class="dot"></span>${Q.active.has(g.id) ? 'Analyzing… ' + Math.round((Q.active.get(g.id) || 0) * 100) + '%' : 'Queued'}</span>` : `<select id="rdepth"><option value="16" selected>Depth 16</option><option value="20">Depth 20 (slower)</option><option value="12">Depth 12 (fast)</option></select><button class="btn primary" id="ranal">Analyze game</button>`}</div>`;
+      const b = $('#ranal'); if (b) b.onclick = () => { Q.front(g.id, +$('#rdepth').value); this.renderSummary(); };
       return;
     }
     const cnt = { w: {}, b: {} };
@@ -69,7 +69,7 @@ VIEWS.review = {
       <svg class="graph" id="rgraph" viewBox="0 0 600 110" preserveAspectRatio="none"></svg>
       <table class="cls-tbl" style="margin-top:8px">${CLS_ORDER.map(c => `<tr><td class="c" style="color:${clsColor(c)}">${cnt.w[c] || 0}</td><td style="width:60%"><span class="row" style="gap:8px;justify-content:center">${icon(c)} ${CLS[c].name}</span></td><td class="c" style="color:${clsColor(c)}">${cnt.b[c] || 0}</td></tr>`).join('')}</table>
       <div class="note" style="text-align:center">Depth ${a.depth} · <a href="#" id="reanal">re-analyze deeper</a></div>`;
-    $('#reanal').onclick = e => { e.preventDefault(); S.analysis.delete(g.id); DB.del('analysis', g.id); Q.items.unshift(g.id); Q.depthOverride = Q.depthOverride || {}; Q.depthOverride[g.id] = Math.min(22, a.depth + 4); Q.total = Q.done + Q.items.length + (Q.cur ? 1 : 0); Q.run(); this.renderSummary(); this.renderMoves(); this.update(); };
+    $('#reanal').onclick = e => { e.preventDefault(); S.analysis.delete(g.id); DB.del('analysis', g.id); Q.front(g.id, Math.min(22, a.depth + 4)); this.renderSummary(); this.renderMoves(); this.update(); };
     this.drawGraph();
   },
   drawGraph() {
@@ -178,5 +178,5 @@ VIEWS.review = {
       this.vari.i = 1; this.update();
     };
   },
-  onAnalysed(id) { if (id === this.g.id) { this.renderSummary(); this.renderMoves(); this.update(); } else if (Q.cur === this.g.id || Q.items.includes(this.g.id)) this.renderSummary(); }
+  onAnalysed(id) { if (id === this.g.id) { this.renderSummary(); this.renderMoves(); this.update(); } else if (Q.busy(this.g.id)) this.renderSummary(); }
 };

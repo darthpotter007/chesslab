@@ -141,7 +141,7 @@ const clsColor = c => `var(--c-${c})`;
 function icon(c) { if (!c) return ''; const s = CLS[c].sym; return `<span class="ic" style="background:${clsColor(c)};font-size:${s.length > 1 && s !== '!!' && s !== '?!' && s !== '??' ? 9 : 10}px" title="${CLS[c].name}">${c === 'excellent' ? '👍' : c === 'book' ? '📖' : s}</span>`; }
 
 const ANALYSIS_VER = 3;
-const CLS_VER = 4; // bump when classification rules change: re-labels saved analyses without re-running the engine
+const CLS_VER = 5; // bump when classification rules change: re-labels saved analyses without re-running the engine
 // Build positions & moves for a game
 function replay(g) {
   const ch = new Chess(g.startFen || undefined);
@@ -214,26 +214,23 @@ function phaseOf(fen, ply) {
   if (ply < 20 && n > 10) return 'open';
   return 'mid';
 }
+// Game accuracy, tuned against chess.com's own accuracy numbers on 33 of your 2025-26 games
+// (same "who played better" verdict in 33/33; ~5 points average gap after calibration):
+// win chance uses a steeper curve (k=0.006), each move scores 103.17*e^(-0.085*winLoss)-2.17,
+// and the game accuracy is the plain average of your move scores. calAcc() then maps it onto chess.com's scale.
+const ACC_K1 = 0.006, ACC_K2 = 0.085;
 function accuracy(evs, fens) {
-  const wps = evs.map(winW); const n = wps.length - 1; const out = { w: null, b: null, wm: [], bm: [] };
+  const wpA = ev => { if (!ev) return 50; if (ev.mate != null) return winW(ev); return 50 + 50 * (2 / (1 + Math.exp(-ACC_K1 * ev.cp)) - 1); };
+  const wps = evs.map(wpA); const n = wps.length - 1; const out = { w: null, b: null, wm: [], bm: [] };
   if (n < 2) return out;
-  const ws = clamp(Math.floor(n / 10), 2, 8);
-  const sd = arr => { const m = arr.reduce((x, y) => x + y, 0) / arr.length; return Math.sqrt(arr.reduce((x, y) => x + (y - m) ** 2, 0) / arr.length); };
-  const acc = { w: [], b: [] }, wts = { w: [], b: [] };
+  const acc = { w: [], b: [] };
   for (let i = 0; i < n; i++) {
     const col = fens[i].split(' ')[1];
     const before = col === 'w' ? wps[i] : 100 - wps[i], after = col === 'w' ? wps[i + 1] : 100 - wps[i + 1];
     const d = Math.max(0, before - after);
-    const a = clamp(103.1668 * Math.exp(-0.04354 * d) - 3.1669 + 1, 0, 100);
-    const lo = Math.max(0, i - ws + 2), win = wps.slice(lo, lo + ws);
-    acc[col].push(a); wts[col].push(clamp(sd(win), 0.5, 12));
+    acc[col].push(clamp(103.1668 * Math.exp(-ACC_K2 * d) - 3.1669 + 1, 0, 100));
   }
-  for (const c of ['w', 'b']) {
-    const A = acc[c], W = wts[c]; if (!A.length) continue;
-    const wm = A.reduce((s, x, i) => s + x * W[i], 0) / W.reduce((s, x) => s + x, 0);
-    const hm = A.length / A.reduce((s, x) => s + 1 / Math.max(x, 1), 0);
-    out[c] = (wm + hm) / 2; out[c + 'm'] = A;
-  }
+  for (const c of ['w', 'b']) { const A = acc[c]; if (!A.length) continue; out[c] = A.reduce((x, y) => x + y, 0) / A.length; out[c + 'm'] = A; }
   return out;
 }
 
@@ -312,26 +309,37 @@ function forkCount(chAfter, m) {
   return n;
 }
 
-// ===== background queue =====
+// ===== background queue (several engines in parallel on multi-core machines) =====
 const Q = {
-  items: [], running: false, cur: null, done: 0, total: 0, depth: 12,
-  add(ids) { for (const id of ids) if (!this.items.includes(id) && this.cur !== id) this.items.push(id); this.total = this.done + this.items.length + (this.cur ? 1 : 0); this.run(); updateStatus(); },
-  cancel() { this.items = []; this.total = this.done + (this.cur ? 1 : 0); updateStatus(); },
-  async run() {
-    if (this.running) return; this.running = true;
+  items: [], active: new Map(), done: 0, total: 0, depth: 16, engines: [ENG_BG],
+  get cur() { return this.active.size ? [...this.active.keys()][0] : null; },
+  get frac() { const v = [...this.active.values()]; return v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0; },
+  workers() { const n = clamp(Math.floor((navigator.hardwareConcurrency || 2) / 4), 1, 3); while (this.engines.length < n) this.engines.push(new Engine('bg' + this.engines.length)); return n; },
+  busy(id) { return this.active.has(id) || this.items.includes(id); },
+  add(ids) { for (const id of ids) if (!this.items.includes(id) && !this.active.has(id)) this.items.push(id); this.total = this.done + this.items.length + this.active.size; this.run(); updateStatus(); },
+  front(id, depth) { this.items = this.items.filter(x => x !== id); this.items.unshift(id); if (depth) { this.depthOverride = this.depthOverride || {}; this.depthOverride[id] = depth; } this.total = this.done + this.items.length + this.active.size; this.run(); updateStatus(); },
+  cancel() { this.items = []; this.total = this.done + this.active.size; updateStatus(); },
+  run() {
+    const n = this.workers(); this.running = this.running || 0;
+    while (this.running < n && this.items.length) { const eng = this.engines.find(e => !e._busy); if (!eng) break; this.worker(eng); }
+  },
+  async worker(eng) {
+    eng._busy = true; this.running++;
     while (this.items.length) {
       const id = this.items.shift(); const g = S.byId.get(id); if (!g) continue;
-      this.cur = id; updateStatus();
+      this.active.set(id, 0); updateStatus();
       try {
-        const a = await analyzeGame(g, ENG_BG, (this.depthOverride && this.depthOverride[id]) || this.depth, (k, n) => { this.frac = k / n; updateStatus(); });
+        const a = await analyzeGame(g, eng, (this.depthOverride && this.depthOverride[id]) || this.depth, (k, n) => { this.active.set(id, k / n); updateStatus(); });
         S.analysis.set(id, a); await DB.put('analysis', id, a);
-        const ps = await makePuzzles(g, a, ENG_BG);
+        const ps = await makePuzzles(g, a, eng);
         for (const p of ps) if (!S.puzzles.has(p.id)) { S.puzzles.set(p.id, p); await DB.put('puzzles', p.id, p); }
-        onAnalysed(id);
-      } catch (e) { console.error('analysis failed', id, e); }
-      this.done++; this.cur = null; this.frac = 0;
+        this.active.delete(id); onAnalysed(id);
+      } catch (e) { console.error('analysis failed', id, e); this.active.delete(id); }
+      this.done++;
     }
-    this.running = false; this.done = 0; this.total = 0; updateStatus();
+    eng._busy = false; this.running--;
+    if (!this.running) { this.done = 0; this.total = 0; }
+    updateStatus();
   }
 };
 function isAnalysed(id) { const a = S.analysis.get(id); return a && a.ver === ANALYSIS_VER; }

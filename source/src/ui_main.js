@@ -17,10 +17,10 @@ function render() {
 window.addEventListener('hashchange', render);
 function updateStatus() {
   const el = $('#qstatus'); if (!el) return;
-  if (CURVIEW === 'review' && VIEWS.review.g && Q.cur === VIEWS.review.g.id && !VIEWS.review.a) { const pl = $('#rsum .pill'); if (pl) pl.innerHTML = '<span class="dot"></span>Analyzing… ' + Math.round((Q.frac || 0) * 100) + '%'; else if ($('#rsum')) VIEWS.review.renderSummary(); }
-  if (!Q.cur && !Q.items.length) { el.innerHTML = ''; return; }
+  if (CURVIEW === 'review' && VIEWS.review.g && Q.active.has(VIEWS.review.g.id) && !VIEWS.review.a) { const pl = $('#rsum .pill'); if (pl) pl.innerHTML = '<span class="dot"></span>Analyzing… ' + Math.round((Q.active.get(VIEWS.review.g.id) || 0) * 100) + '%'; else if ($('#rsum')) VIEWS.review.renderSummary(); }
+  if (!Q.active.size && !Q.items.length) { el.innerHTML = ''; return; }
   const g = S.byId.get(Q.cur);
-  el.innerHTML = `<span class="pill" data-tip="Engine analysis runs in the background. Results are saved."><span class="dot"></span>Analyzing ${Q.done + 1}/${Q.total}${g ? ' · vs ' + esc(g.opp.name) : ''} · ${Math.round((Q.frac || 0) * 100)}%</span> <button class="btn sm" onclick="Q.cancel()">Stop</button>`;
+  el.innerHTML = `<span class="pill" data-tip="Engine analysis runs in the background. Results are saved."><span class="dot"></span>Analyzing ${Math.min(Q.total, Q.done + Q.active.size)}/${Q.total}${Q.active.size > 1 ? ` · ${Q.active.size} at once` : g ? ' · vs ' + esc(g.opp.name) : ''} · ${Math.round((Q.frac || 0) * 100)}%</span> <button class="btn sm" onclick="Q.cancel()">Stop</button>`;
 }
 let _refreshT = null;
 function onAnalysed(id) {
@@ -125,11 +125,11 @@ VIEWS.games = {
       wrap.innerHTML = `<div class="row" style="margin-bottom:10px"><input id="gq" placeholder="Search opponent or opening" value="${esc(this.q)}" style="min-width:260px">
         <span class="chips">${[['all', 'All'], ['win', 'Wins'], ['loss', 'Losses'], ['draw', 'Draws']].map(([v, t]) => `<span class="chip ${this.res === v ? 'on' : ''}" data-r="${v}">${t}</span>`).join('')}</span>
         <span class="sp"></span><span class="muted">${gs.length} games · ${gs.length - un.length} analyzed</span>
-        <select id="bdepth" data-tip="Engine depth for bulk analysis. 12 is fast and solid; 16 is slower and more precise."><option value="10">Fast (depth 10)</option><option value="12" selected>Standard (depth 12)</option><option value="16">Deep (depth 16)</option></select>
+        <select id="bdepth" data-tip="Engine depth. 16 matches chess.com closely; 12 is ~3x faster but labels about 1 in 3 moves differently."><option value="12">Fast (depth 12)</option><option value="16" selected>Standard (depth 16)</option><option value="20">Deep (depth 20)</option></select>
         <button class="btn primary" id="anall" ${un.length ? '' : 'disabled'}>Analyze ${un.length > 50 ? 'next 50' : un.length} unanalyzed</button></div>
         <table><thead><tr><th></th><th>Date</th><th>Opponent</th><th>Opening</th><th>Type</th><th>Moves</th><th>Accuracy</th><th></th></tr></thead><tbody>
         ${gs.slice(this.page * per, this.page * per + per).map(g => { const a = S.analysis.get(g.id); const acc = g.acc && g.acc.me != null ? fmt1(g.acc.me) : isAnalysed(g.id) && a.acc[g.color] != null ? fmt1(calAcc(a.acc[g.color])) : '<span class="muted">—</span>';
-          return `<tr class="click" data-id="${esc(g.id)}"><td><span class="res ${g.result}">${g.result === 'win' ? 'W' : g.result === 'loss' ? 'L' : '½'}</span></td><td>${fmtDate(g.end)}</td><td><span class="cdot ${g.color}" data-tip="You played ${g.color === 'w' ? 'White' : 'Black'}"></span> ${esc(g.opp.name)} <span class="muted">(${g.opp.rating || '?'})</span></td><td class="t2" style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.opening)}</td><td class="t2">${g.tc}</td><td>${g.moves}</td><td>${acc}</td><td>${isAnalysed(g.id) ? '<span class="tag">analyzed</span>' : Q.cur === g.id || Q.items.includes(g.id) ? '<span class="tag">queued</span>' : ''}</td></tr>`; }).join('')}
+          return `<tr class="click" data-id="${esc(g.id)}"><td><span class="res ${g.result}">${g.result === 'win' ? 'W' : g.result === 'loss' ? 'L' : '½'}</span></td><td>${fmtDate(g.end)}</td><td><span class="cdot ${g.color}" data-tip="You played ${g.color === 'w' ? 'White' : 'Black'}"></span> ${esc(g.opp.name)} <span class="muted">(${g.opp.rating || '?'})</span></td><td class="t2" style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.opening)}</td><td class="t2">${g.tc}</td><td>${g.moves}</td><td>${acc}</td><td>${isAnalysed(g.id) ? '<span class="tag">analyzed</span>' : Q.busy(g.id) ? '<span class="tag">queued</span>' : ''}</td></tr>`; }).join('')}
         </tbody></table>
         <div class="row" style="margin-top:10px;justify-content:center">${pages > 1 ? `<button class="btn sm" id="pp" ${this.page ? '' : 'disabled'}>← Prev</button><span class="muted">Page ${this.page + 1} of ${pages}</span><button class="btn sm" id="pn" ${this.page < pages - 1 ? '' : 'disabled'}>Next →</button>` : ''}</div>`;
       const gq = $('#gq', wrap); gq.oninput = () => { this.q = gq.value; this.page = 0; const pos = gq.selectionStart; draw(); const n = $('#gq', wrap); n.focus(); n.setSelectionRange(pos, pos); };
