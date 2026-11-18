@@ -10,42 +10,41 @@ const pk = path => path.join(' ');
 const myTurnAt = (color, n) => (n % 2 === 0) === (color === 'w');
 
 // --- build from your games (+ engine fixes + book where you have no data) ---
-function repAutoBuild(color, maxPly = 16) {
+function repAutoBuild(color, maxPly = 18) {
   const R = REP.empty(); const old = REP.c(color);
   const gs = scoped().filter(g => g.color === color && !g.startFen);
-  const fixes = []; let nodes = 0;
-  const rec = (path, here) => {
-    if (path.length >= maxPly || nodes > 400) return;
-    const key = pk(path); const n = path.length; const cnt = {};
+  const fixes = []; let myN = 0;
+  // best-first: always expand the position you reach most often, so common lines get covered before rare ones
+  const heap = [{ path: [], here: gs }];
+  while (heap.length && myN < 220) {
+    heap.sort((x, y) => y.here.length - x.here.length);
+    const { path, here } = heap.shift();
+    const n = path.length; if (n >= maxPly) continue;
+    const key = pk(path); const cnt = {};
     for (const g of here) { const s = g.sans[n]; if (s) cnt[s] = (cnt[s] || 0) + 1; }
     const bn = bookNode(path);
+    const bookTop = k => bn ? Object.entries(bn).sort((a, b) => subtreeSize(b[1][1]) - subtreeSize(a[1][1])).slice(0, k).map(x => x[0]) : [];
     if (myTurnAt(color, n)) {
       let san = Object.entries(cnt).sort((a, b) => b[1] - a[1]).find(([s, c]) => c >= 2)?.[0];
       if (san) {
-        // engine check: if analysed games show this move losing ground here, switch to the engine's choice
-        const an = here.filter(g => g.sans[n] === san && isAnalysed(g.id)); let loss = 0, bests = {};
+        const an = here.filter(g => g.sans[n] === san && isAnalysed(g.id)); let loss = 0; const bests = {};
         for (const g of an) { const a = S.analysis.get(g.id); loss += a.loss[n] || 0; const b = a.best[n]; if (b) bests[b] = (bests[b] || 0) + 1; }
         if (an.length >= 2 && loss / an.length >= 0.07) {
-          const bu = Object.entries(bests).sort((a, b) => b[1] - a[1])[0]; const fen = fenAfter(path);
-          const bs = bu && uciToSan(fen, bu[0]);
+          const bu = Object.entries(bests).sort((a, b) => b[1] - a[1])[0]; const bs = bu && uciToSan(fenAfter(path), bu[0]);
           if (bs && bs !== san) { fixes.push({ path: path.slice(), from: san, to: bs }); san = bs; }
         }
-      } else if (bn && Object.keys(bn).length) {
-        san = Object.entries(bn).sort((a, b) => subtreeSize(b[1][1]) - subtreeSize(a[1][1]))[0][0];
-      }
-      if (!san) return;
-      R.my[key] = san; nodes++;
-      rec([...path, san], here.filter(g => g.sans[n] === san));
+      } else if (n < 12) san = bookTop(1)[0];
+      if (!san) continue;
+      R.my[key] = san; myN++;
+      heap.push({ path: [...path, san], here: here.filter(g => g.sans[n] === san) });
     } else {
-      let reps = Object.entries(cnt).filter(([s, c]) => c >= Math.max(2, here.length * 0.06)).sort((a, b) => b[1] - a[1]).slice(0, 4).map(x => x[0]);
-      if (!reps.length && bn) reps = Object.entries(bn).sort((a, b) => subtreeSize(b[1][1]) - subtreeSize(a[1][1])).slice(0, here.length ? 1 : 2).map(x => x[0]);
-      if (!reps.length) return;
+      let reps = Object.entries(cnt).filter(([s, c]) => c >= Math.max(2, here.length * 0.02)).sort((a, b) => b[1] - a[1]).slice(0, n < 2 ? 7 : 5).map(x => x[0]);
+      if (!reps.length && n < 12) reps = bookTop(here.length ? 1 : 2);
+      if (!reps.length) continue;
       R.opp[key] = reps;
-      for (const r of reps) rec([...path, r], here.filter(g => g.sans[n] === r));
+      for (const r of reps) heap.push({ path: [...path, r], here: here.filter(g => g.sans[n] === r) });
     }
-  };
-  rec([], gs);
-  // keep spaced-repetition progress for positions whose move didn't change
+  }
   for (const k in old.srs) if (R.my[k] && old.my[k] === R.my[k]) R.srs[k] = old.srs[k];
   R.built = Date.now();
   return { rep: R, fixes };
