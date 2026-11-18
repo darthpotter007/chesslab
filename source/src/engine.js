@@ -135,7 +135,7 @@ const clsColor = c => `var(--c-${c})`;
 function icon(c) { if (!c) return ''; const s = CLS[c].sym; return `<span class="ic" style="background:${clsColor(c)};font-size:${s.length > 1 && s !== '!!' && s !== '?!' && s !== '??' ? 9 : 10}px" title="${CLS[c].name}">${c === 'excellent' ? '👍' : c === 'book' ? '📖' : s}</span>`; }
 
 const ANALYSIS_VER = 3;
-const PZ_VER = 2; // bump when puzzle generation changes: puzzles are re-made in the background, keeping your progress
+const PZ_VER = 3; // bump when puzzle generation changes: puzzles are re-made in the background, keeping your progress
 const CLS_VER = 7; // bump when classification rules change: re-labels saved analyses without re-running the engine
 // Build positions & moves for a game
 function replay(g) {
@@ -260,6 +260,7 @@ async function makePuzzles(g, a, eng, depth = 14) {
       const ch = new Chess(fens[i]); moveUci(ch, line[0]);
       const mat0 = material(new Chess(fens[i]), me);
       let reply = (a.pv[i] || '').split(' ')[1];
+      const startW = winFor(a.ev[i], me); // for defensive puzzles the goal is to hold, not to win
       while (reply && line.length < 9 && !ch.game_over()) {
         const rm = moveUci(ch, reply); if (!rm) break;
         if (ch.game_over()) { ch.undo(); break; }
@@ -269,11 +270,12 @@ async function makePuzzles(g, a, eng, depth = 14) {
         const mateLine = l0.mate != null && (me === 'w' ? l0.mate > 0 : l0.mate < 0);
         // unique = the best move is clearly better than the 2nd best. For mates: the 2nd best isn't a mate (or is a much longer one).
         const unique = mateLine ? (Math.abs(l0.mate) === 1 || !(l1 && l1.mate != null && Math.sign(l1.mate) === Math.sign(l0.mate) && Math.abs(l1.mate) <= Math.abs(l0.mate) + 1))
-          : (w0 - w1 >= 15 && w1 < 90 && w0 >= 60);
+          : (w0 - w1 >= 15 && w1 < 90 && w0 >= Math.min(60, startW - 10));
         const gained = material(ch, me) - mat0;
         const nextSan = uciToSan(ch.fen(), l0.pv[0]);
         // stop once the point has been made: material is won and the next move is just a quiet consolidation
-        if (!unique || (!mateLine && gained >= 2 && !/[x+#=]/.test(nextSan))) { ch.undo(); break; }
+        const madePoint = c.kind === 'defense' || startW < 60 ? gained >= 0 : gained >= 2;
+        if (!unique || (!mateLine && madePoint && !/[x+#=]/.test(nextSan))) { ch.undo(); break; }
         line.push(reply, l0.pv[0]); moveUci(ch, l0.pv[0]);
         reply = l0.pv[1];
       }
