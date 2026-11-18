@@ -135,6 +135,7 @@ const clsColor = c => `var(--c-${c})`;
 function icon(c) { if (!c) return ''; const s = CLS[c].sym; return `<span class="ic" style="background:${clsColor(c)};font-size:${s.length > 1 && s !== '!!' && s !== '?!' && s !== '??' ? 9 : 10}px" title="${CLS[c].name}">${c === 'excellent' ? '👍' : c === 'book' ? '📖' : s}</span>`; }
 
 const ANALYSIS_VER = 3;
+const PZ_VER = 2; // bump when puzzle generation changes: puzzles are re-made in the background, keeping your progress
 const CLS_VER = 7; // bump when classification rules change: re-labels saved analyses without re-running the engine
 // Build positions & moves for a game
 function replay(g) {
@@ -255,22 +256,26 @@ async function makePuzzles(g, a, eng, depth = 14) {
     const alts = [];
     if (c.kind === 'opening' && a.sec[i] && winFor(a.ev[i], me) - winFor(a.sec[i], me) <= 3) alts.push(a.sec[i].u);
     if (c.kind !== 'opening') {
-      // extend line while the solver's moves stay unique
+      // extend into a multi-move puzzle while your next move is still clearly the strongest (up to 5 of your moves)
       const ch = new Chess(fens[i]); moveUci(ch, line[0]);
-      const pv = (a.pv[i] || '').split(' ');
       const mat0 = material(new Chess(fens[i]), me);
-      for (let k = 1; k + 1 < pv.length && line.length < 5; k += 2) {
-        if (ch.game_over()) break;
-        const reply = pv[k]; const rm = moveUci(ch, reply); if (!rm) break;
+      let reply = (a.pv[i] || '').split(' ')[1];
+      while (reply && line.length < 9 && !ch.game_over()) {
+        const rm = moveUci(ch, reply); if (!rm) break;
         if (ch.game_over()) { ch.undo(); break; }
         const r = await eng.analyze(ch.fen(), { depth, multipv: 2 });
-        const l0 = r.lines[0], l1 = r.lines[1]; if (!l0) { ch.undo(); break; }
+        const l0 = r.lines[0], l1 = r.lines[1]; if (!l0 || !l0.pv) { ch.undo(); break; }
         const w0 = winFor(l0, me), w1 = l1 ? winFor(l1, me) : 0;
         const mateLine = l0.mate != null && (me === 'w' ? l0.mate > 0 : l0.mate < 0);
-        const unique = mateLine ? !(l1 && l1.mate != null && Math.sign(l1.mate) === Math.sign(l0.mate)) || Math.abs(l0.mate) === 1 : (w0 - w1 >= 20 && w1 < 85);
+        // unique = the best move is clearly better than the 2nd best. For mates: the 2nd best isn't a mate (or is a much longer one).
+        const unique = mateLine ? (Math.abs(l0.mate) === 1 || !(l1 && l1.mate != null && Math.sign(l1.mate) === Math.sign(l0.mate) && Math.abs(l1.mate) <= Math.abs(l0.mate) + 1))
+          : (w0 - w1 >= 15 && w1 < 90 && w0 >= 60);
         const gained = material(ch, me) - mat0;
-        if (!unique || (!mateLine && gained >= 2 && !/[x+#]/.test(uciToSan(ch.fen(), l0.pv[0])))) { ch.undo(); break; }
+        const nextSan = uciToSan(ch.fen(), l0.pv[0]);
+        // stop once the point has been made: material is won and the next move is just a quiet consolidation
+        if (!unique || (!mateLine && gained >= 2 && !/[x+#=]/.test(nextSan))) { ch.undo(); break; }
         line.push(reply, l0.pv[0]); moveUci(ch, l0.pv[0]);
+        reply = l0.pv[1];
       }
     }
     const first = new Chess(fens[i]); const fm = moveUci(first, line[0]);
@@ -293,7 +298,7 @@ async function makePuzzles(g, a, eng, depth = 14) {
     out.push({
       id: g.id + '#' + i, gameId: g.id, ply: i, fen: fens[i], prevFen: fens[i - 1], prevMove: uciOf(moves[i - 1]),
       line, alts, color: me, kind: c.kind, themes, played: uciOf(moves[i]), rating, created: Date.now(),
-      tries: 0, solved: 0, due: 0, ivl: 0, last: 0, phase: a.phase ? a.phase[i] : 'mid'
+      tries: 0, solved: 0, due: 0, ivl: 0, last: 0, phase: a.phase ? a.phase[i] : 'mid', gameEnd: g.end, ver: PZ_VER
     });
   }
   return out;
@@ -324,15 +329,18 @@ const Q = {
   async worker(eng) {
     eng._busy = true; this.running++;
     while (this.items.length) {
-      const id = this.items.shift(); const g = S.byId.get(id); if (!g) continue;
-      this.active.set(id, 0); updateStatus();
+      const job = this.items.shift(); const pzOnly = job.startsWith('pz:'); const id = pzOnly ? job.slice(3) : job;
+      const g = S.byId.get(id); if (!g) continue;
+      this.active.set(job, 0); updateStatus();
       try {
-        const a = await analyzeGame(g, eng, (this.depthOverride && this.depthOverride[id]) || this.depth, (k, n) => { this.active.set(id, k / n); updateStatus(); });
-        S.analysis.set(id, a); await DB.put('analysis', id, a);
+        let a;
+        if (pzOnly) { a = S.analysis.get(id); if (!a || a.ver !== ANALYSIS_VER || a.pzv === PZ_VER) { this.active.delete(job); this.done++; continue; } }
+        else { a = await analyzeGame(g, eng, (this.depthOverride && this.depthOverride[id]) || this.depth, (k, n) => { this.active.set(job, k / n); updateStatus(); }); }
         const ps = await makePuzzles(g, a, eng);
-        for (const p of ps) if (!S.puzzles.has(p.id)) { S.puzzles.set(p.id, p); await DB.put('puzzles', p.id, p); }
-        this.active.delete(id); onAnalysed(id);
-      } catch (e) { console.error('analysis failed', id, e); this.active.delete(id); }
+        await savePuzzles(g, ps);
+        a.pzv = PZ_VER; S.analysis.set(id, a); await DB.put('analysis', id, a);
+        this.active.delete(job); onAnalysed(id);
+      } catch (e) { console.error('analysis failed', id, e); this.active.delete(job); }
       this.done++;
     }
     eng._busy = false; this.running--;
@@ -340,4 +348,19 @@ const Q = {
     updateStatus();
   }
 };
+// store a game's freshly made puzzles, carrying over your progress on ones that already existed
+async function savePuzzles(g, ps) {
+  const old = [...S.puzzles.values()].filter(p => p.gameId === g.id);
+  const keep = ['tries', 'solved', 'due', 'ivl', 'last', 'created'];
+  const put = [];
+  for (const p of ps) { const o = S.puzzles.get(p.id); if (o) for (const k of keep) p[k] = o[k]; S.puzzles.set(p.id, p); put.push([p.id, p]); }
+  if (put.length) await DB.putMany('puzzles', put);
+  for (const o of old) if (!ps.some(p => p.id === o.id) && !o.tries) { S.puzzles.delete(o.id); await DB.del('puzzles', o.id); }
+}
+// re-make puzzles for games analysed before the current puzzle rules (runs after any real analysis in the queue)
+function queuePuzzleRefresh() {
+  const ids = [...S.analysis.entries()].filter(([id, a]) => a.ver === ANALYSIS_VER && a.pzv !== PZ_VER && S.byId.has(id) && inScope(S.byId.get(id)))
+    .sort((x, y) => S.byId.get(y[0]).end - S.byId.get(x[0]).end).map(([id]) => 'pz:' + id);
+  if (ids.length) Q.add(ids);
+}
 function isAnalysed(id) { const a = S.analysis.get(id); return a && a.ver === ANALYSIS_VER; }

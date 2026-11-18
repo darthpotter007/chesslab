@@ -19,8 +19,8 @@ function updateStatus() {
   const el = $('#qstatus'); if (!el) return;
   if (CURVIEW === 'review' && VIEWS.review.g && Q.active.has(VIEWS.review.g.id) && !VIEWS.review.a) { const pl = $('#rsum .pill'); if (pl) pl.innerHTML = '<span class="dot"></span>Analyzing… ' + Math.round((Q.active.get(VIEWS.review.g.id) || 0) * 100) + '%'; else if ($('#rsum')) VIEWS.review.renderSummary(); }
   if (!Q.active.size && !Q.items.length) { el.innerHTML = ''; return; }
-  const g = S.byId.get(Q.cur);
-  el.innerHTML = `<span class="pill" data-tip="Engine analysis runs in the background. Results are saved."><span class="dot"></span>Analyzing ${Math.min(Q.total, Q.done + Q.active.size)}/${Q.total}${Q.active.size > 1 ? ` · ${Q.active.size} at once` : g ? ' · vs ' + esc(g.opp.name) : ''} · ${Math.round((Q.frac || 0) * 100)}%</span> <button class="btn sm" onclick="Q.cancel()">Stop</button>`;
+  const cur = Q.cur || ''; const g = S.byId.get(cur.replace(/^pz:/, '')); const pzMode = cur.startsWith('pz:');
+  el.innerHTML = `<span class="pill" data-tip="Engine analysis runs in the background. Results are saved."><span class="dot"></span>${pzMode ? 'Upgrading puzzles' : 'Analyzing'} ${Math.min(Q.total, Q.done + Q.active.size)}/${Q.total}${Q.active.size > 1 ? ` · ${Q.active.size} at once` : g ? ' · vs ' + esc(g.opp.name) : ''} · ${Math.round((Q.frac || 0) * 100)}%</span> <button class="btn sm" onclick="Q.cancel()">Stop</button>`;
 }
 let _refreshT = null;
 function onAnalysed(id) {

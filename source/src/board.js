@@ -19,7 +19,10 @@ class Board {
   xy(sq) { const f = FILES.indexOf(sq[0]), r = +sq[1] - 1; return this.orient === 'w' ? [f, 7 - r] : [7 - f, r]; }
   sqAt(e) { const b = this.el.getBoundingClientRect(); const x = Math.floor((e.clientX - b.left) / b.width * 8), y = Math.floor((e.clientY - b.top) / b.height * 8); if (x < 0 || x > 7 || y < 0 || y > 7) return null; return this.orient === 'w' ? FILES[x] + (8 - y) : FILES[7 - x] + (y + 1); }
   flip() { this.orient = this.orient === 'w' ? 'b' : 'w'; this.render(); }
-  set(fen, opts = {}) { if (fen !== this.fen) this.ann = { arrows: [], circles: [] }; this.fen = fen; this.opts = opts; this.sel = null; this.render(); }
+  set(fen, opts = {}) {
+    // move sounds: only when the new position really is the previous one plus the highlighted move
+    if (fen !== this.fen && this.fen && opts.last && opts.sound !== false && typeof SND !== 'undefined') { try { const c = new Chess(this.fen); const m = moveUci(c, opts.last); if (m && epdOf(c.fen()) === epdOf(fen)) SND.forMove(m, c); } catch (e) { } }
+    if (fen !== this.fen) this.ann = { arrows: [], circles: [] }; this.fen = fen; this.opts = opts; this.sel = null; this.render(); }
   clearAnn() { if (this.ann.arrows.length || this.ann.circles.length) { this.ann = { arrows: [], circles: [] }; this.render(); } }
   render() {
     if (!this.fen) return;

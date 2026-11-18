@@ -134,7 +134,7 @@ VIEWS.openings = {
     const moves = this.trBookMoves();
     let lastU = null; if (ply) { const ch = new Chess(fenAfter(t.path.slice(0, -1))); const mm = ch.move(t.path[ply - 1]); lastU = mm && uciOf(mm); }
     this.tb.set(fen, { last: lastU });
-    if (!moves.length || ply >= 24) { this.trStat('ok', `✓ End of book line. ${t.right} correct, ${t.errs} mistake${t.errs === 1 ? '' : 's'}. <a href="#" id="tragain">Again</a>`); const a = $('#tragain'); if (a) a.onclick = e => { e.preventDefault(); this.trStart(t.sel); }; return; }
+    if (!moves.length || ply >= 24) { SND.play('correct'); this.trStat('ok', `✓ End of book line. ${t.right} correct, ${t.errs} mistake${t.errs === 1 ? '' : 's'}. <a href="#" id="tragain">Again</a>`); const a = $('#tragain'); if (a) a.onclick = e => { e.preventDefault(); this.trStart(t.sel); }; return; }
     const myTurn = (ply % 2 === 0) === (t.color === 'w');
     if (myTurn) { t.missedHere = false; this.trStat('', `Your move. ${ply < t.target.length ? '' : '<span class="note">(any book move counts)</span>'}`); return; }
     // opponent: weighted by your real opponents' replies + book popularity
@@ -150,7 +150,7 @@ VIEWS.openings = {
     const ok = this.trBookMoves();
     if (ok.includes(m.san)) { if (!t.missedHere) t.right++; t.path.push(m.san); this.tb.set(ch.fen(), { last: u, marks: { [m.to]: 'good' } }); this.trStat('ok', `✓ ${esc(m.san)}`); t.wait = true; this.tt = setTimeout(() => { t.wait = false; this.trNext(); }, 350); return; }
     if (!t.missedHere) { t.errs++; t.missedHere = true; }
-    this.tb.set(ch.fen(), { last: u, marks: { [m.to]: 'bad' } }); t.wait = true;
+    this.tb.set(ch.fen(), { last: u, marks: { [m.to]: 'bad' } }); t.wait = true; setTimeout(() => SND.play('wrong'), 120);
     this.trStat('bad', `✗ ${esc(m.san)} isn't the book move here. Try again, or press <b>Show move</b>.`);
     this.tt = setTimeout(() => { t.wait = false; this.tb.set(fenAfter(t.path)); }, 800);
   },

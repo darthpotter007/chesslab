@@ -129,7 +129,7 @@ VIEWS.play = {
     const fen = this.hist[this.hist.length - 1]; this.b.set(fen, { last });
     const ch = new Chess(fen);
     if (this.showEval) liveEval(fen, c => { if (this.hist[this.hist.length - 1] === fen && c.lines[0]) evalBarSet($('#pleb'), c.lines[0], this.it.color); }, 14, 1);
-    if (ch.game_over() || this.repetition()) { this.over = true; const draw = !ch.in_checkmate(); const iWon = ch.in_checkmate() && ch.turn() !== this.it.color; const ok = iWon || (draw && this.it.goal === 'draw'); this.st(ok ? 'ok' : 'bad', iWon ? '🏆 Checkmate, you won!' : draw ? (this.it.goal === 'draw' ? '✓ Draw — goal achieved.' : '½ Draw. You were trying to win — try again!') : 'You were checkmated. Take back or restart and try another plan.'); return; }
+    if (ch.game_over() || this.repetition()) { if (!this.over && !ch.in_checkmate()) SND.play('end'); this.over = true; const draw = !ch.in_checkmate(); const iWon = ch.in_checkmate() && ch.turn() !== this.it.color; const ok = iWon || (draw && this.it.goal === 'draw'); this.st(ok ? 'ok' : 'bad', iWon ? '🏆 Checkmate, you won!' : draw ? (this.it.goal === 'draw' ? '✓ Draw — goal achieved.' : '½ Draw. You were trying to win — try again!') : 'You were checkmated. Take back or restart and try another plan.'); return; }
     if (ch.turn() !== this.it.color) this.engineMove(); else this.st('', 'Your move');
   },
   repetition() { const k = this.hist.map(f => f.split(' ').slice(0, 4).join(' ')); const last = k[k.length - 1]; return k.filter(x => x === last).length >= 3; },

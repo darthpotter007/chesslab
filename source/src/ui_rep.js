@@ -247,7 +247,7 @@ VIEWS.rep = {
   },
   step() {
     const l = this.dl, col = this.color, R = REP.c(col);
-    if (this.di >= l.length) { this.dst('ok', '✓ Line complete'); this.dwait = true; this.t = setTimeout(() => { this.dwait = false; this.nextLine(); }, 700); return; }
+    if (this.di >= l.length) { SND.play('correct'); this.dst('ok', '✓ Line complete'); this.dwait = true; this.t = setTimeout(() => { this.dwait = false; this.nextLine(); }, 700); return; }
     const fen = fenAfter(l.slice(0, this.di));
     if (myTurnAt(col, this.di)) {
       const key = pk(l.slice(0, this.di)); const s = R.srs[key]; this.dmiss = false;
@@ -270,7 +270,7 @@ VIEWS.rep = {
       this.dwait = true; this.t = setTimeout(() => { this.dwait = false; this.step(); }, 300); return;
     }
     if (!this.dmiss && !this.dnew) { this.dmiss = true; this.dstats.bad++; if (!this.dq.includes(l)) this.dq.push(l); }
-    this.db.set(c.fen(), { last: u, marks: { [m.to]: 'bad' } }); this.dwait = true;
+    this.db.set(c.fen(), { last: u, marks: { [m.to]: 'bad' } }); this.dwait = true; setTimeout(() => SND.play('wrong'), 120);
     this.dst('bad', `✗ ${esc(m.san)} isn't your prepared move. Try again${this.dmiss ? ', or press Show move' : ''}.`);
     this.t = setTimeout(() => { this.dwait = false; this.db.set(fen, { last: this.lastU() }); }, 800);
   },
